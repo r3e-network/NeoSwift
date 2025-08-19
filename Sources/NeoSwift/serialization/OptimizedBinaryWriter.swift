@@ -92,7 +92,7 @@ public class OptimizedBinaryWriter {
     }
     
     public func writeSerializableVariableBytes(_ v: NeoSerializable) {
-        let tempWriter = OptimizedBinaryWriter()
+        let tempWriter = BinaryWriter()
         v.serialize(tempWriter)
         let bytes = tempWriter.toArray()
         writeVarInt(bytes.count)

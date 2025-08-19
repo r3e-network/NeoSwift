@@ -1,4 +1,5 @@
 import Foundation
+import CryptoSwift
 
 /// Thread-safe hash cache for repeated cryptographic operations
 public final class HashCache {
@@ -42,7 +43,7 @@ public final class HashCache {
         }
         
         // Compute hash
-        let hash = Hash.sha256(data)
+        let hash = data.sha256()
         
         // Store in cache
         setCached(key: key, hash: hash, cost: data.count)
@@ -60,7 +61,7 @@ public final class HashCache {
         }
         
         // Compute hash
-        let hash = Hash.hash256(data)
+        let hash = data.hash256()
         
         // Store in cache
         setCached(key: key, hash: hash, cost: data.count)
@@ -78,7 +79,7 @@ public final class HashCache {
         }
         
         // Compute hash
-        let hash = Hash.hash160(data)
+        let hash = data.sha256ThenRipemd160()
         
         // Store in cache
         setCached(key: key, hash: hash, cost: data.count)
