@@ -47,7 +47,7 @@ final class SecurityTests: XCTestCase {
         
         // Test signing
         let message = "Test message".bytes
-        let messageHash = message.sha256
+        let messageHash = message.sha256()
         let signature = secureKeyPair.sign(messageHash: messageHash)
         
         XCTAssertEqual(signature.count, 2)
@@ -165,7 +165,7 @@ final class SecurityTests: XCTestCase {
         // Perform concurrent hash operations
         for _ in 0..<100 {
             DispatchQueue.global().async {
-                let hash = cache.hash256(data)
+                let hash = cache.sha256(data)
                 lock.lock()
                 results.append(hash)
                 lock.unlock()
@@ -213,7 +213,7 @@ final class SecurityTests: XCTestCase {
     func testDeterministicSignatures() throws {
         let keyPair = try ECKeyPair.createEcKeyPair()
         let message = "Test message for signing".bytes
-        let messageHash = message.sha256
+        let messageHash = message.sha256()
         
         // Sign same message multiple times
         let sig1 = keyPair.sign(messageHash: messageHash)
@@ -228,7 +228,7 @@ final class SecurityTests: XCTestCase {
     func testSignatureVerification() throws {
         let keyPair = try ECKeyPair.createEcKeyPair()
         let message = "Message to sign and verify".bytes
-        let messageHash = message.sha256
+        let messageHash = message.sha256()
         
         // Sign message
         let signature = keyPair.signAndGetECDSASignature(messageHash: messageHash)
@@ -240,7 +240,7 @@ final class SecurityTests: XCTestCase {
         XCTAssertTrue(isValid)
         
         // Verify with wrong message fails
-        let wrongMessage = "Wrong message".bytes.sha256
+        let wrongMessage = "Wrong message".bytes.sha256()
         let isInvalid = publicKey.verify(signature: signature.signature, msg: wrongMessage)
         
         XCTAssertFalse(isInvalid)

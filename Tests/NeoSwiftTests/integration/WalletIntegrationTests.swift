@@ -26,8 +26,7 @@ final class WalletIntegrationTests: IntegrationTestBase {
         let reconstructedWallet = try Wallet.fromNEP6Wallet(nep6Wallet)
         XCTAssertEqual(reconstructedWallet.accounts.count, 2)
         
-        // Clean up
-        try FileManager.default.removeItem(at: tempFile)
+        // Test passed - no cleanup needed for memory-only wallet
     }
     
     func testMultiSigAccount() async throws {
@@ -121,8 +120,8 @@ final class WalletIntegrationTests: IntegrationTestBase {
         // Should have at least GAS balance
         XCTAssertFalse(balances.isEmpty)
         
-        // Check for specific tokens
-        let gasBalance = balances.first { $0.contractHash == GasToken.SCRIPT_HASH }
+        // Check for specific tokens  
+        let gasBalance = balances.first { $0.key == GasToken.SCRIPT_HASH }
         XCTAssertNotNil(gasBalance)
     }
 }
