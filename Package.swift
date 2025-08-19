@@ -16,11 +16,11 @@ let package = Package(
                  targets: ["NeoSwift"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/leif-ibsen/BigInt", from: "1.4.0"),
-        .package(url: "https://github.com/leif-ibsen/SwiftECC", from: "3.4.1"),
-        .package(url: "https://github.com/krzyzanowskim/CryptoSwift", from: "1.6.0"),
-        .package(url: "https://github.com/greymass/swift-scrypt.git", from: "1.0.0"),
-        .package(url: "https://github.com/pengpengliu/BIP39", from: "1.0.1"),
+        .package(url: "https://github.com/leif-ibsen/BigInt", "1.4.0"..<"2.0.0"),
+        .package(url: "https://github.com/leif-ibsen/SwiftECC", "3.4.1"..<"4.0.0"),
+        .package(url: "https://github.com/krzyzanowskim/CryptoSwift", "1.6.0"..<"2.0.0"),
+        .package(url: "https://github.com/greymass/swift-scrypt.git", "1.0.0"..<"2.0.0"),
+        .package(url: "https://github.com/pengpengliu/BIP39", "1.0.1"..<"2.0.0"),
     ],
     targets: [
         .target(name: "NeoSwift",

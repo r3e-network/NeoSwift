@@ -20,7 +20,7 @@ public struct BlockIndexPolling {
         return Timer.publish(every: Double(pollingInterval) / 1000, on: .current, in: .default)
             .autoconnect()
             .setFailureType(to: Error.self)
-            .syncMap { _ -> [Int]? in
+            .asyncMap { _ -> [Int]? in
                 let latestBlockIndex = try await neoSwift.getBlockCount().send().getResult() - 1
                 if await currentBlockIndex.blockIndex == nil {
                     await currentBlockIndex.setIndex(latestBlockIndex)
@@ -42,25 +42,29 @@ public struct BlockIndexPolling {
 
 
 extension Publisher {
-    func syncMap<T>(
+    /// Maps values using an async transformation without blocking threads
+    func asyncMap<T>(
         _ transform: @escaping (Output) async throws -> T
     ) -> Publishers.FlatMap<Future<T, Error>, Self> {
         flatMap { value in
-            let semaphore = DispatchSemaphore(value: 0)
-            let future = Future<T, Error>({ promise in
+            Future<T, Error> { promise in
                 Task {
                     do {
                         let output = try await transform(value)
                         promise(.success(output))
-                        semaphore.signal()
                     } catch {
                         promise(.failure(error))
-                        semaphore.signal()
                     }
                 }
-            })
-            semaphore.wait()
-            return future
+            }
         }
+    }
+    
+    /// Legacy syncMap for backward compatibility - DEPRECATED
+    @available(*, deprecated, renamed: "asyncMap", message: "Use asyncMap instead to avoid thread blocking")
+    func syncMap<T>(
+        _ transform: @escaping (Output) async throws -> T
+    ) -> Publishers.FlatMap<Future<T, Error>, Self> {
+        return asyncMap(transform)
     }
 }

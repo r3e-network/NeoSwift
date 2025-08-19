@@ -1,21 +1,68 @@
 # This workflow will build a Swift project
 # For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-swift
 
-name: Build Push
+name: Build and Test
 
 on:
   push:
-    branches:
-      - main
-      
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
 jobs:
   build:
-    runs-on: macos-latest
+    name: Build and Test on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, ubuntu-latest]
+        swift: ["5.9"]
+        
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
+    
+    - name: Setup Swift ${{ matrix.swift }}
+      uses: swift-actions/setup-swift@v1
       with:
-        swift-version: "5.6"
+        swift-version: ${{ matrix.swift }}
+    
+    - name: Get swift version
+      run: swift --version
+    
+    - name: Cache Swift packages
+      uses: actions/cache@v3
+      with:
+        path: .build
+        key: ${{ runner.os }}-spm-${{ hashFiles('**/Package.resolved') }}
+        restore-keys: |
+          ${{ runner.os }}-spm-
+    
+    - name: Resolve dependencies
+      run: swift package resolve
+    
     - name: Build
-      run: swift build -v
+      run: swift build -v --configuration debug
+    
+    - name: Build Release
+      run: swift build -v --configuration release
+    
     - name: Run tests
-      run: swift test -v
+      run: swift test -v --parallel
+    
+    - name: Run specific test suites
+      run: |
+        echo "Running security tests..."
+        swift test --filter SecurityTests
+        echo "Running crypto tests..."
+        swift test --filter CryptoTests || true
+        echo "Running wallet tests..."
+        swift test --filter WalletTests || true
+    
+    - name: Test Summary
+      if: always()
+      run: |
+        echo "## Test Summary" >> $GITHUB_STEP_SUMMARY
+        echo "- Platform: ${{ matrix.os }}" >> $GITHUB_STEP_SUMMARY
+        echo "- Swift Version: ${{ matrix.swift }}" >> $GITHUB_STEP_SUMMARY
+        echo "- Build Status: ${{ job.status }}" >> $GITHUB_STEP_SUMMARY

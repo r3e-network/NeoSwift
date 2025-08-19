@@ -1,0 +1,144 @@
+name: Security Scan
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    # Run security scan weekly on Monday at 9 AM UTC
+    - cron: '0 9 * * 1'
+
+jobs:
+  dependency-scan:
+    name: Dependency Security Scan
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Swift
+      uses: swift-actions/setup-swift@v1
+      with:
+        swift-version: "5.9"
+    
+    - name: Cache Swift packages
+      uses: actions/cache@v3
+      with:
+        path: .build
+        key: ${{ runner.os }}-spm-${{ hashFiles('**/Package.resolved') }}
+        restore-keys: |
+          ${{ runner.os }}-spm-
+    
+    - name: Check for outdated dependencies
+      run: |
+        swift package update --dry-run
+        swift package show-dependencies
+    
+    - name: Run SwiftLint Security Rules
+      run: |
+        if which swiftlint >/dev/null; then
+          swiftlint --strict --config .swiftlint-security.yml
+        else
+          echo "SwiftLint not installed, skipping..."
+        fi
+    
+    - name: Check for hardcoded secrets
+      uses: trufflesecurity/trufflehog@main
+      with:
+        path: ./
+        base: ${{ github.event.repository.default_branch }}
+        head: HEAD
+        extra_args: --debug --only-verified
+    
+    - name: SAST Scan with Semgrep
+      uses: returntocorp/semgrep-action@v1
+      with:
+        config: >-
+          p/security-audit
+          p/swift
+          p/cryptography
+    
+    - name: Upload security results
+      uses: github/codeql-action/upload-sarif@v2
+      if: always()
+      with:
+        sarif_file: semgrep.sarif
+
+  code-quality:
+    name: Code Quality & Security Analysis
+    runs-on: macos-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Swift
+      uses: swift-actions/setup-swift@v1
+      with:
+        swift-version: "5.9"
+    
+    - name: Build for security analysis
+      run: |
+        swift build --configuration debug -Xswiftc -warnings-as-errors
+    
+    - name: Run security tests
+      run: |
+        swift test --filter SecurityTests
+    
+    - name: Generate test coverage
+      run: |
+        swift test --enable-code-coverage
+        xcrun llvm-cov report \
+          .build/debug/NeoSwiftPackageTests.xctest/Contents/MacOS/NeoSwiftPackageTests \
+          -instr-profile .build/debug/codecov/default.profdata \
+          -ignore-filename-regex=".*/Tests/.*" \
+          -use-color
+    
+    - name: Check for common vulnerabilities
+      run: |
+        # Check for force unwrapping in production code
+        echo "Checking for force unwrapping..."
+        if grep -r "!" --include="*.swift" Sources/ | grep -v "!=" | grep -v "// SAFE:"; then
+          echo "Warning: Force unwrapping found in production code"
+        fi
+        
+        # Check for print statements in production code
+        echo "Checking for print statements..."
+        if grep -r "print(" --include="*.swift" Sources/; then
+          echo "Warning: Print statements found in production code"
+        fi
+        
+        # Check for hardcoded credentials
+        echo "Checking for hardcoded credentials..."
+        if grep -r -i "password\s*=\s*\"" --include="*.swift" Sources/; then
+          echo "Error: Potential hardcoded password found!"
+          exit 1
+        fi
+
+  license-check:
+    name: License Compliance Check
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Check dependency licenses
+      run: |
+        echo "Checking licenses of dependencies..."
+        # Add license checking tool here
+        # For Swift packages, could use swift-package-licenses or similar
+
+  security-report:
+    name: Generate Security Report
+    needs: [dependency-scan, code-quality, license-check]
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+    - name: Create security summary
+      run: |
+        echo "## Security Scan Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "- Dependency Scan: ${{ needs.dependency-scan.result }}" >> $GITHUB_STEP_SUMMARY
+        echo "- Code Quality: ${{ needs.code-quality.result }}" >> $GITHUB_STEP_SUMMARY
+        echo "- License Check: ${{ needs.license-check.result }}" >> $GITHUB_STEP_SUMMARY

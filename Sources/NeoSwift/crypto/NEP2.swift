@@ -29,7 +29,7 @@ public class NEP2 {
         let plainPrivateKey = try Bytes(derivedKey.prefix(32)) ^ decryptedBytes
         let keyPair = try ECKeyPair.create(privateKey: plainPrivateKey)
         let newAddressHash = try getAddressHash(keyPair)
-        guard newAddressHash == addressHash else {
+        guard ConstantTime.areEqual(newAddressHash, addressHash) else {
             throw NEP2Error.invalidPassphrase("Calculated address hash does not match the one in the provided encrypted address.")
         }
         return keyPair

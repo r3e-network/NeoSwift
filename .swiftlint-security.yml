@@ -1,0 +1,109 @@
+# SwiftLint Security Configuration for NeoSwift
+
+# Paths
+included:
+  - Sources
+  - Tests
+
+excluded:
+  - .build
+  - Package.swift
+  - Tests/NeoSwiftTests/unit/resources
+
+# Rules
+only_rules:
+  # Security-focused rules
+  - force_cast
+  - force_try
+  - force_unwrapping
+  - implicitly_unwrapped_optional
+  - weak_delegate
+  - private_over_fileprivate
+  - private_unit_test
+  
+  # Memory safety
+  - unowned_variable_capture
+  - strong_iboutlet
+  
+  # Code quality that impacts security
+  - empty_string
+  - empty_xctest_method
+  - identical_operands
+  - overridden_super_call
+  - prohibited_super_call
+  - unused_capture_list
+  - unused_closure_parameter
+  - unused_control_flow_label
+  - unused_enumerated
+  - unused_optional_binding
+  - unused_setter_value
+  
+  # Cryptography specific
+  - legacy_random
+  
+# Rule configurations
+force_cast:
+  severity: error
+
+force_try:
+  severity: error
+
+force_unwrapping:
+  severity: error
+  excluded:
+    - Tests
+
+implicitly_unwrapped_optional:
+  severity: error
+  mode: all_except_iboutlets
+
+legacy_random:
+  severity: error
+
+# Custom rules for security
+custom_rules:
+  no_print_in_production:
+    name: "No Print in Production"
+    regex: '(^|\s)print\('
+    excluded:
+      - Tests
+    message: "Remove print statements from production code"
+    severity: warning
+    
+  no_hardcoded_secrets:
+    name: "No Hardcoded Secrets"
+    regex: '(password|secret|key|token)\s*=\s*"[^"]+"'
+    excluded:
+      - Tests
+    message: "Do not hardcode secrets in source code"
+    severity: error
+    
+  no_string_based_crypto:
+    name: "No String-based Cryptography"
+    regex: 'String.*\.(sha256|hash256|hash160)\(\)'
+    message: "Convert strings to bytes before hashing"
+    severity: warning
+    
+  secure_random_only:
+    name: "Use Secure Random"
+    regex: '(arc4random|rand|random)\('
+    message: "Use SecureRandom or crypto-safe random generation"
+    severity: error
+    
+  no_weak_crypto:
+    name: "No Weak Cryptography"
+    regex: '(MD5|SHA1|DES|RC4)'
+    message: "Use strong cryptographic algorithms (SHA256+)"
+    severity: error
+    
+  no_todo_in_security:
+    name: "No TODO in Security Code"
+    regex: '(TODO|FIXME|HACK)'
+    included:
+      - "*/crypto/*"
+      - "*/wallet/*"
+    message: "Security-critical code should not have TODOs"
+    severity: warning
+
+# Reporter
+reporter: "json"
