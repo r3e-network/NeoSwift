@@ -73,8 +73,11 @@ class IntegrationTestBase: XCTestCase {
     
     /// Check account balance
     func getAccountBalance(_ account: Account, token: Hash160) async throws -> Int {
-        let balances = try await account.getNep17Balances(neoSwift)
-        return balances.first { $0.contractHash == token }?.amount.intValue ?? 0
+        // Get NEP-17 balances for the account's script hash
+        let scriptHash = try account.getScriptHash()
+        let response = try await neoSwift.getNep17Balances(scriptHash.toString()).send()
+        let balances = response.balances?.balances ?? []
+        return balances.first { $0.assetHash == token }?.amount.integerValue ?? 0
     }
 }
 

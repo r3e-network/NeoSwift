@@ -19,14 +19,11 @@ final class WalletIntegrationTests: IntegrationTestBase {
         XCTAssertEqual(wallet.accounts.count, 2)
         
         // Test NEP6 export
-        let nep6Json = try wallet.toNEP6Json()
-        XCTAssertFalse(nep6Json.isEmpty)
+        let nep6Wallet = try wallet.toNEP6Wallet()
+        XCTAssertFalse(nep6Wallet.accounts.isEmpty)
         
         // Test wallet reconstruction from NEP6
-        let tempFile = FileManager.default.temporaryDirectory.appendingPathComponent("test-wallet.json")
-        try nep6Json.write(to: tempFile, atomically: true, encoding: .utf8)
-        
-        let reconstructedWallet = try Wallet.fromNEP6Wallet(tempFile.path)
+        let reconstructedWallet = try Wallet.fromNEP6Wallet(nep6Wallet)
         XCTAssertEqual(reconstructedWallet.accounts.count, 2)
         
         // Clean up
@@ -54,14 +51,17 @@ final class WalletIntegrationTests: IntegrationTestBase {
         XCTAssertTrue(multiSigAccount.isMultiSig)
         
         // Verify verification script
-        let verificationScript = try multiSigAccount.getVerificationScript()
+        guard let verificationScript = multiSigAccount.verificationScript else {
+            XCTFail("Multi-sig account should have verification script")
+            return
+        }
         XCTAssertFalse(verificationScript.script.isEmpty)
     }
     
     func testAccountEncryption() async throws {
         // Create account with known private key
-        let privateKey = try ECKeyPair.createEcKeyPair().privateKey
-        let account = try Account.fromPrivateKey(privateKey)
+        let keyPair = try ECKeyPair.createEcKeyPair()
+        let account = try Account(keyPair: keyPair)
         
         // Test NEP2 encryption
         let password = "TestPassword123!"
@@ -72,9 +72,10 @@ final class WalletIntegrationTests: IntegrationTestBase {
         XCTAssertEqual(encrypted.count, 58)
         
         // Test decryption
-        let decryptedAccount = try Account.fromNEP2(encrypted, password)
+        let decryptedKeyPair = try NEP2.decrypt(password, encrypted)
+        let decryptedAccount = try Account(keyPair: decryptedKeyPair)
         XCTAssertEqual(account.address, decryptedAccount.address)
-        XCTAssertEqual(account.getScriptHash(), decryptedAccount.getScriptHash())
+        XCTAssertEqual(try account.getScriptHash(), try decryptedAccount.getScriptHash())
     }
     
     func testWalletAccountOperations() async throws {
@@ -88,12 +89,14 @@ final class WalletIntegrationTests: IntegrationTestBase {
         XCTAssertEqual(wallet.accounts.count, 3) // 1 default + 2 added
         
         // Remove account
-        wallet = wallet.removeAccount(account1.address)
+        let removed = try wallet.removeAccount(account1)
+        XCTAssertTrue(removed)
         XCTAssertEqual(wallet.accounts.count, 2)
         XCTAssertNil(wallet.accounts.first { $0.address == account1.address })
         
         // Set default account
-        wallet = wallet.defaultAccount(account2.address)
+        let scriptHash = try account2.getScriptHash()
+        wallet = try wallet.defaultAccount(scriptHash)
         XCTAssertEqual(wallet.defaultAccount?.address, account2.address)
     }
     
