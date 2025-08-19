@@ -48,7 +48,7 @@ jobs:
 
   security-check:
     name: Security Pre-Release Check
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs: validate
     
     steps:
@@ -83,7 +83,7 @@ jobs:
     needs: [validate, security-check]
     strategy:
       matrix:
-        os: [macos-latest, ubuntu-latest]
+        os: [macos-latest, ubuntu-22.04]
         
     steps:
     - uses: actions/checkout@v4
@@ -110,7 +110,7 @@ jobs:
 
   create-release:
     name: Create Pre-Release
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs: [validate, security-check, build-artifacts]
     
     steps:
@@ -187,7 +187,7 @@ jobs:
 
   post-release:
     name: Post-Release Tasks
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs: [validate, create-release]
     
     steps:

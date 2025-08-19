@@ -39,7 +39,7 @@ jobs:
 
   security-audit:
     name: Security Audit
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs: validate
     
     steps:
@@ -104,7 +104,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-latest, ubuntu-latest]
+        os: [macos-latest, ubuntu-22.04]
         
     steps:
     - uses: actions/checkout@v4
@@ -134,7 +134,7 @@ jobs:
           -C .build/release .
         
         # Create source archive (only for one platform to avoid duplicates)
-        if [ "${{ matrix.os }}" == "ubuntu-latest" ]; then
+        if [ "${{ matrix.os }}" == "ubuntu-22.04" ]; then
           git archive --format=tar.gz --prefix=neoswift-${{ needs.validate.outputs.version_number }}/ \
             HEAD > artifacts/neoswift-${{ needs.validate.outputs.version }}-source.tar.gz
         fi
@@ -167,7 +167,7 @@ jobs:
 
   create-release:
     name: Create GitHub Release
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs: [validate, security-audit, build-matrix, test-integration]
     
     steps:
@@ -304,7 +304,7 @@ jobs:
 
   post-release:
     name: Post-Release Tasks  
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs: [validate, create-release]
     
     steps:

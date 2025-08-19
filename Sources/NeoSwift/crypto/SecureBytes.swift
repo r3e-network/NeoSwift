@@ -1,6 +1,14 @@
 import Foundation
 import Security
 
+#if os(macOS) || os(iOS) || os(watchOS) || os(tvOS)
+import Darwin
+#elseif os(Linux)
+import Glibc
+#elseif os(Windows)
+import ucrt
+#endif
+
 /// A secure container for sensitive byte data that ensures proper memory cleanup
 /// and protection against memory dumps
 public final class SecureBytes {
@@ -19,8 +27,8 @@ public final class SecureBytes {
             bytes.initialize(from: srcPointer, count: count)
         }
         
-        // Lock memory to prevent swapping (best effort)
-        mlock(bytes, count)
+        // Lock memory to prevent swapping (best effort, ignore failures)
+        _ = mlock(bytes, count)
     }
     
     /// Initialize with specified size, filled with zeros
@@ -28,7 +36,7 @@ public final class SecureBytes {
         self.count = count
         self.bytes = UnsafeMutablePointer<UInt8>.allocate(capacity: count)
         bytes.initialize(repeating: 0, count: count)
-        mlock(bytes, count)
+        _ = mlock(bytes, count)
     }
     
     deinit {
@@ -49,8 +57,8 @@ public final class SecureBytes {
         // Final overwrite with zeros
         memset(bytes, 0, count)
         
-        // Unlock and deallocate
-        munlock(bytes, count)
+        // Unlock and deallocate (ignore munlock failures)
+        _ = munlock(bytes, count)
         bytes.deallocate()
         isCleared = true
     }
