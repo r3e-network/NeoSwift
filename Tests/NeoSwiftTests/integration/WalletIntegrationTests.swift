@@ -65,14 +65,18 @@ final class WalletIntegrationTests: IntegrationTestBase {
         
         // Test NEP2 encryption
         let password = "TestPassword123!"
-        let encrypted = try account.encryptPrivateKey(password)
+        try account.encryptPrivateKey(password)
         
         // Verify encrypted format
-        XCTAssertTrue(encrypted.hasPrefix("6P"))
-        XCTAssertEqual(encrypted.count, 58)
+        guard let encryptedKey = account.encryptedPrivateKey else {
+            XCTFail("Account should have encrypted private key after encryption")
+            return
+        }
+        XCTAssertTrue(encryptedKey.hasPrefix("6P"))
+        XCTAssertEqual(encryptedKey.count, 58)
         
         // Test decryption
-        let decryptedKeyPair = try NEP2.decrypt(password, encrypted)
+        let decryptedKeyPair = try NEP2.decrypt(password, encryptedKey)
         let decryptedAccount = try Account(keyPair: decryptedKeyPair)
         XCTAssertEqual(account.address, decryptedAccount.address)
         XCTAssertEqual(try account.getScriptHash(), try decryptedAccount.getScriptHash())
@@ -85,7 +89,7 @@ final class WalletIntegrationTests: IntegrationTestBase {
         let account1 = try Account.create()
         let account2 = try Account.create()
         
-        wallet = wallet.addAccounts([account1, account2])
+        wallet = try wallet.addAccounts([account1, account2])
         XCTAssertEqual(wallet.accounts.count, 3) // 1 default + 2 added
         
         // Remove account
