@@ -6,6 +6,19 @@ public class HttpService: Service {
     public static let JSON_MEDIA_TYPE = "application/json; charset=utf-8"
     public static let DEFAULT_URL = URL(string: "http://localhost:10333/")!
     
+    /// Default NEO Mainnet RPC endpoints
+    public static let MAINNET_URLS = [
+        URL(string: "https://mainnet1.neo.coz.io:443")!,
+        URL(string: "https://mainnet2.neo.coz.io:443")!,
+        URL(string: "https://mainnet3.neo.coz.io:443")!
+    ]
+    
+    /// Default NEO Testnet RPC endpoints  
+    public static let TESTNET_URLS = [
+        URL(string: "https://testnet1.neo.coz.io:443")!,
+        URL(string: "https://testnet2.neo.coz.io:443")!
+    ]
+    
     public let url: URL
     public let includeRawResponses: Bool
     public private(set) var headers = [String: String]()

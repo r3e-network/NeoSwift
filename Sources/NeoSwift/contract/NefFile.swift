@@ -227,8 +227,7 @@ extension NefFile: NeoSerializable {
         let file = try NefFile(compiler: compiler, sourceUrl: sourceUrl, methodTokens: methodTokens, script: script)
         let checksum = try reader.readBytes(NefFile.CHECKSUM_SIZE)
         guard file.checksum == checksum else {
-            print(file.checksum, checksum)
-            throw NeoSwiftError.deserialization("The checksums did not match.")
+            throw NeoSwiftError.deserialization("NEF file checksum validation failed. Expected: \(file.checksum.hex), Got: \(checksum.hex)")
         }
         return file
     }

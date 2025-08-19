@@ -103,10 +103,10 @@ public final class HashCache {
     }
     
     /// Get cache statistics
+    /// Note: NSCache doesn't provide built-in hit/miss statistics
     public func cacheStats() -> (hits: Int, misses: Int, count: Int) {
-        // Note: NSCache doesn't provide hit/miss stats, so we'd need to track manually
-        // For now, just return the count
-        return (0, 0, 0) // Would need manual tracking
+        // NSCache doesn't provide hit/miss stats without manual tracking
+        return (0, 0, 0)
     }
     
     // MARK: - Private Methods
