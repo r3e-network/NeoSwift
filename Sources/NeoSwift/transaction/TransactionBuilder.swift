@@ -185,7 +185,12 @@ public class TransactionBuilder {
     public func attributes(_ attributes: [TransactionAttribute]) throws -> TransactionBuilder {
         try throwIfMaxAttributesExceeded(signers.count, self.attributes.count + attributes.count)
         attributes.forEach { attr in
-            if attr != .highPriority || !isHighPriority {
+            if attr.allowsMultiple {
+                self.attributes.append(attr)
+                return
+            }
+            let alreadyPresent = self.attributes.contains(where: { $0.byte == attr.byte })
+            if !alreadyPresent {
                 self.attributes.append(attr)
             }
         }

@@ -136,6 +136,25 @@ class SerializableTransactionTest: XCTestCase {
         XCTAssert(transaction.signers[0].scopes.contains(.calledByEntry))
         XCTAssertEqual(transaction.script, [OpCode.push1.opcode])
     }
+
+    public func testTransactionAttributeSerialization() throws {
+        let attributes: [TransactionAttribute] = [
+            .highPriority,
+            .oracleResponse(7, .success, "AA=="),
+            .notValidBefore(12345),
+            .conflicts(.ZERO),
+            .notaryAssisted(2)
+        ]
+
+        for attribute in attributes {
+            let writer = BinaryWriter()
+            attribute.serialize(writer)
+            let data = writer.toArray()
+            let reader = BinaryReader(data)
+            let decoded = try TransactionAttribute.deserialize(reader)
+            XCTAssertEqual(decoded, attribute)
+        }
+    }
     
     public func testSize() {
         let signers = try! [AccountSigner.global(account1), AccountSigner.calledByEntry(account2)]

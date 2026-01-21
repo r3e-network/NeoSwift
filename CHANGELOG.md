@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.1.0] - 2026-01-21
+
+### Added
+- Neo N3 v3.9 RPC coverage for `findstorage`, `getcandidates`, and `canceltransaction`
+- Transaction attributes for Conflicts, NotValidBefore, and NotaryAssisted
+- Expanded `getversion` decoding for rpc/protocol metadata (hardforks, seedlist, standbycommittee)
+
+### Changed
+- Address encoding/validation now respects configured address version
+- Transaction attribute de-duplication aligned with node rules
+
+### Tests
+- Added attribute serialization round-trip coverage
+
 ## [2.0.0] - 2024-12-19
 
 ### 🛡️ Security (BREAKING CHANGES)

@@ -6,7 +6,7 @@
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/crisogray/NeoSwift/blob/main/LICENSE)
 [![Security](https://img.shields.io/badge/Security-Production%20Ready-brightgreen.svg)](docs/SECURITY.md)
 
-NeoSwift is a **production-ready, security-first** Swift SDK for interacting with the Neo blockchain from iOS and Mac devices. It maintains the same interface as the established Java/Android SDK [neow3j](https://github.com/neow3j/neow3j) while providing enhanced security features and performance optimizations.
+NeoSwift is a **production-ready, security-first** Swift SDK for interacting with the Neo blockchain from iOS and Mac devices. It maintains the same interface as the established Java/Android SDK [neow3j](https://github.com/neow3j/neow3j) while providing enhanced security features and performance optimizations. Compatible with Neo N3 v3.9 RPC.
 
 ## ✨ Key Features
 
@@ -15,6 +15,7 @@ NeoSwift is a **production-ready, security-first** Swift SDK for interacting wit
 - 🧪 **Thoroughly Tested**: Comprehensive security and integration test suites
 - 📱 **Multi-Platform**: iOS 13+, macOS 10.15+, tvOS 13+, watchOS 6+
 - 🔄 **neow3j Compatible**: Familiar API for Java developers
+- ✅ **Neo N3 v3.9 RPC**: Coverage for current node methods and responses
 
 ## 📦 Installation
 
@@ -23,7 +24,7 @@ NeoSwift is a **production-ready, security-first** Swift SDK for interacting wit
 Add to your `Package.swift`:
 ```swift
 dependencies: [
-    .package(url: "https://github.com/crisogray/NeoSwift", from: "2.0.0")
+    .package(url: "https://github.com/crisogray/NeoSwift", from: "2.1.0")
 ]
 ```
 
@@ -410,7 +411,7 @@ let image = properties["image"]
 
 ### Production Readiness
 
-NeoSwift v2.0+ is production-ready with:
+NeoSwift v2.1+ is production-ready with:
 - ✅ Comprehensive security audit completed
 - ✅ Performance optimizations (50-70% faster serialization)
 - ✅ Extensive test coverage including security tests
@@ -422,6 +423,7 @@ NeoSwift v2.0+ is production-ready with:
 - 🚀 **[Deployment Guide](docs/DEPLOYMENT.md)** - Production deployment instructions
 - 📋 **[Migration Guide](CHANGELOG.md#migration-guide)** - Upgrading from v1.x
 - 🐛 **[Security Fixes Summary](SECURITY_FIXES_SUMMARY.md)** - All security improvements
+- 🧩 **[Neo SDK Interface Spec](docs/neo-sdk-spec.md)** - Language-agnostic interface/modules for implementing Neo SDKs in other languages
 
 ## 🧪 Testing
 

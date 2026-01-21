@@ -7,6 +7,8 @@ public typealias NeoBlockHeaderCount = NeoConnectionCount
 
 public class NeoCalculateNetworkFee: Response<NeoNetworkFee> { public var networkFee: NeoNetworkFee? { return result } }
 
+public class NeoCancelTransaction: Response<Transaction> { public var cancelTransaction: Transaction? { return result } }
+
 public class NeoCloseWallet: Response<Bool> { public var closeWallet: Bool? { return result } }
 
 public class NeoConnectionCount: Response<Int> { public var count: Int? { return result } }
@@ -34,6 +36,8 @@ public class NeoGetApplicationLog: Response<NeoApplicationLog> { public var appl
 public class NeoGetBlock: Response<NeoBlock> { public var block: NeoBlock? { return result } }
 
 public class NeoGetCommittee: Response<[String]> { public var committee: [String]? { return result } }
+
+public class NeoGetCandidates: Response<[NeoGetNextBlockValidators.Validator]> { public var candidates: [NeoGetNextBlockValidators.Validator]? { return result } }
 
 public class NeoGetContractState: Response<ContractState> { public var contractState: ContractState? { return result } }
 

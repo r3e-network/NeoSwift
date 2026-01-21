@@ -25,8 +25,15 @@ public protocol Neo {
     func getTransaction(_ txHash: Hash256) -> Request<NeoGetTransaction, Transaction>
     func getRawTransaction(_ txHash: Hash256) -> Request<NeoGetRawTransaction, String>
     func getStorage(_ contractHash: Hash160, _ keyHexString: String) -> Request<NeoGetStorage, String>
+    func findStorage(_ contractHash: Hash160, _ keyPrefixHex: String, _ start: Int) -> Request<NeoFindStorage, NeoFindStorage.FindStorageResult>
+    func findStorage(_ contractHash: Hash160, _ keyPrefixHex: String) -> Request<NeoFindStorage, NeoFindStorage.FindStorageResult>
+    func findStorage(_ contractId: Int, _ keyPrefixHex: String, _ start: Int) -> Request<NeoFindStorage, NeoFindStorage.FindStorageResult>
+    func findStorage(_ contractId: Int, _ keyPrefixHex: String) -> Request<NeoFindStorage, NeoFindStorage.FindStorageResult>
+    func findStorage(_ contractName: String, _ keyPrefixHex: String, _ start: Int) -> Request<NeoFindStorage, NeoFindStorage.FindStorageResult>
+    func findStorage(_ contractName: String, _ keyPrefixHex: String) -> Request<NeoFindStorage, NeoFindStorage.FindStorageResult>
     func getTransactionHeight(_ txHash: Hash256) -> Request<NeoGetTransactionHeight, Int>
     func getNextBlockValidators() -> Request<NeoGetNextBlockValidators, [NeoGetNextBlockValidators.Validator]>
+    func getCandidates() -> Request<NeoGetCandidates, [NeoGetNextBlockValidators.Validator]>
     func getCommittee() -> Request<NeoGetCommittee, [String]>
     
     // MARK: Node Methods
@@ -66,6 +73,7 @@ public protocol Neo {
     func importPrivKey(_ privateKeyInWIF: String) -> Request<NeoImportPrivKey, NeoAddress>
     func calculateNetworkFee(_ transactionHex: String) -> Request<NeoCalculateNetworkFee, NeoNetworkFee>
     func listAddress() -> Request<NeoListAddress, [NeoAddress]>
+    func cancelTransaction(_ txHash: Hash256, _ signers: [Hash160], _ extraFee: String?) -> Request<NeoCancelTransaction, Transaction>
     func sendFrom(_ tokenHash: Hash160, _ from: Hash160, _ to: Hash160, _ amount: Int) -> Request<NeoSendFrom, Transaction>
     func sendFrom(_ from: Hash160, _ txSendToken: TransactionSendToken) throws -> Request<NeoSendFrom, Transaction>
     func sendMany(_ txSendTokens: [TransactionSendToken]) -> Request<NeoSendMany, Transaction>

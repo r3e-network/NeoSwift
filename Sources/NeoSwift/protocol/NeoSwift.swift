@@ -81,12 +81,27 @@ public class NeoSwift: Neo, NeoSwiftRx {
     /// - Returns: The network's magic number
     public func getNetworkMagicNumber() async throws -> Int {
         if config.networkMagic == nil {
-            guard let magic = try await getVersion().send().getResult().protocol?.network else {
+            let version = try await getVersion().send().getResult()
+            guard let protocolConfig = version.protocol else {
                 throw NeoSwiftError.illegalState("Unable to read Network Magic Number from Version")
             }
-            _ = try config.setNetworkMagic(magic)
+            _ = try config.setNetworkMagic(protocolConfig.network)
+            syncConfigFromVersion(protocolConfig)
         }
         return config.networkMagic!
+    }
+
+    private func syncConfigFromVersion(_ protocolConfig: NeoGetVersion.NeoVersion.NeoProtocol) {
+        if NeoSwiftConfig.addressVersion == NeoSwiftConfig.DEFAULT_ADDRESS_VERSION,
+           protocolConfig.addressVersion >= 0 && protocolConfig.addressVersion <= 0xFF {
+            NeoSwiftConfig.setAddressVersion(Byte(protocolConfig.addressVersion))
+        }
+        if config.blockInterval == NeoSwiftConfig.DEFAULT_BLOCK_TIME {
+            _ = config.setBlockInterval(protocolConfig.msPerBlock)
+        }
+        if config.maxValidUntilBlockIncrement == NeoSwiftConfig.MAX_VALID_UNTIL_BLOCK_INCREMENT_BASE / NeoSwiftConfig.DEFAULT_BLOCK_TIME {
+            _ = config.setMaxValidUntilBlockIncrement(protocolConfig.maxValidUntilBlockIncrement)
+        }
     }
     
     // MARK: Blockchain Methods
@@ -240,6 +255,63 @@ public class NeoSwift: Neo, NeoSwiftRx {
     public func getStorage(_ contractHash: Hash160, _ keyHexString: String) -> Request<NeoGetStorage, String> {
         return .init(method: "getstorage", params: [contractHash.string, keyHexString.base64Encoded], neoSwiftService: neoSwiftService)
     }
+
+    /// Finds storage items by contract hash and key prefix.
+    /// - Parameters:
+    ///   - contractHash: The contract hash
+    ///   - keyPrefixHex: The storage key prefix as a hexadecimal string
+    ///   - start: The start index (default 0)
+    /// - Returns: The request object
+    public func findStorage(_ contractHash: Hash160, _ keyPrefixHex: String, _ start: Int = 0) -> Request<NeoFindStorage, NeoFindStorage.FindStorageResult> {
+        return .init(method: "findstorage", params: [contractHash.string, keyPrefixHex.base64Encoded, start], neoSwiftService: neoSwiftService)
+    }
+
+    /// Finds storage items by contract hash and key prefix.
+    /// - Parameters:
+    ///   - contractHash: The contract hash
+    ///   - keyPrefixHex: The storage key prefix as a hexadecimal string
+    /// - Returns: The request object
+    public func findStorage(_ contractHash: Hash160, _ keyPrefixHex: String) -> Request<NeoFindStorage, NeoFindStorage.FindStorageResult> {
+        return findStorage(contractHash, keyPrefixHex, 0)
+    }
+
+    /// Finds storage items by contract id and key prefix.
+    /// - Parameters:
+    ///   - contractId: The contract id
+    ///   - keyPrefixHex: The storage key prefix as a hexadecimal string
+    ///   - start: The start index (default 0)
+    /// - Returns: The request object
+    public func findStorage(_ contractId: Int, _ keyPrefixHex: String, _ start: Int = 0) -> Request<NeoFindStorage, NeoFindStorage.FindStorageResult> {
+        return .init(method: "findstorage", params: [contractId, keyPrefixHex.base64Encoded, start], neoSwiftService: neoSwiftService)
+    }
+
+    /// Finds storage items by contract id and key prefix.
+    /// - Parameters:
+    ///   - contractId: The contract id
+    ///   - keyPrefixHex: The storage key prefix as a hexadecimal string
+    /// - Returns: The request object
+    public func findStorage(_ contractId: Int, _ keyPrefixHex: String) -> Request<NeoFindStorage, NeoFindStorage.FindStorageResult> {
+        return findStorage(contractId, keyPrefixHex, 0)
+    }
+
+    /// Finds storage items by native contract name and key prefix.
+    /// - Parameters:
+    ///   - contractName: The native contract name
+    ///   - keyPrefixHex: The storage key prefix as a hexadecimal string
+    ///   - start: The start index (default 0)
+    /// - Returns: The request object
+    public func findStorage(_ contractName: String, _ keyPrefixHex: String, _ start: Int = 0) -> Request<NeoFindStorage, NeoFindStorage.FindStorageResult> {
+        return .init(method: "findstorage", params: [contractName, keyPrefixHex.base64Encoded, start], neoSwiftService: neoSwiftService)
+    }
+
+    /// Finds storage items by native contract name and key prefix.
+    /// - Parameters:
+    ///   - contractName: The native contract name
+    ///   - keyPrefixHex: The storage key prefix as a hexadecimal string
+    /// - Returns: The request object
+    public func findStorage(_ contractName: String, _ keyPrefixHex: String) -> Request<NeoFindStorage, NeoFindStorage.FindStorageResult> {
+        return findStorage(contractName, keyPrefixHex, 0)
+    }
     
     /// Gets the transaction height with the specified transaction hash.
     /// - Parameter txHash: The transaction hash
@@ -252,6 +324,12 @@ public class NeoSwift: Neo, NeoSwiftRx {
     /// - Returns: The request object
     public func getNextBlockValidators() -> Request<NeoGetNextBlockValidators, [NeoGetNextBlockValidators.Validator]> {
         return .init(method: "getnextblockvalidators", params: [], neoSwiftService: neoSwiftService)
+    }
+
+    /// Gets the candidates list for the next block validators.
+    /// - Returns: The request object
+    public func getCandidates() -> Request<NeoGetCandidates, [NeoGetNextBlockValidators.Validator]> {
+        return .init(method: "getcandidates", params: [], neoSwiftService: neoSwiftService)
     }
     
     /// Gets the public key list of current Neo committee members.
@@ -472,6 +550,20 @@ public class NeoSwift: Neo, NeoSwiftRx {
     /// - Returns: The request object
     public func listAddress() -> Request<NeoListAddress, [NeoAddress]> {
         return .init(method: "listaddress", params: [], neoSwiftService: neoSwiftService)
+    }
+
+    /// Cancels an unconfirmed transaction by creating and relaying a conflicting transaction.
+    /// - Parameters:
+    ///   - txHash: The hash of the transaction to cancel
+    ///   - signers: The signers for the cancellation transaction
+    ///   - extraFee: Optional extra network fee as a string
+    /// - Returns: The request object
+    public func cancelTransaction(_ txHash: Hash256, _ signers: [Hash160], _ extraFee: String? = nil) -> Request<NeoCancelTransaction, Transaction> {
+        var params: [AnyHashable] = [txHash.string, signers.map(\.string)]
+        if let extraFee = extraFee {
+            params.append(extraFee)
+        }
+        return .init(method: "canceltransaction", params: params, neoSwiftService: neoSwiftService)
     }
     
     /// Opens the specified wallet.
@@ -761,4 +853,3 @@ public class NeoSwift: Neo, NeoSwiftRx {
     }
         
 }
-
