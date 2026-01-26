@@ -17,8 +17,8 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/leif-ibsen/BigInt", "1.4.0"..<"2.0.0"),
-        .package(url: "https://github.com/leif-ibsen/SwiftECC", "3.4.1"..<"4.0.0"),
-        .package(url: "https://github.com/krzyzanowskim/CryptoSwift", "1.6.0"..<"2.0.0"),
+        .package(url: "https://github.com/leif-ibsen/SwiftECC", "5.0.0"..<"6.0.0"),
+        .package(url: "https://github.com/krzyzanowskim/CryptoSwift", "1.8.0"..<"2.0.0"),
         .package(url: "https://github.com/greymass/swift-scrypt.git", "1.0.0"..<"2.0.0"),
         .package(url: "https://github.com/pengpengliu/BIP39", "1.0.1"..<"2.0.0"),
     ],
