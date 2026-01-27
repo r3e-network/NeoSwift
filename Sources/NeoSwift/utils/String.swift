@@ -12,7 +12,8 @@ public extension String {
     }
     
     var base64Decoded: Bytes {
-        return Data(base64Encoded: self)?.bytes ?? []
+        guard let data = Data(base64Encoded: self) else { return [] }
+        return [UInt8](data)
     }
     
     var base64Encoded: String {
