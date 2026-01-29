@@ -8,7 +8,7 @@ on:
     branches: [ main ]
 
 env:
-  SWIFT_VERSION: "5.9"
+  SWIFT_VERSION: "5.10"
 
 jobs:
   # Build and test on multiple platforms
@@ -20,7 +20,7 @@ jobs:
       matrix:
         include:
           - platform: macOS
-            runs-on: macos-latest
+            runs-on: macos-14
           - platform: Ubuntu
             runs-on: ubuntu-22.04
     
@@ -97,7 +97,7 @@ jobs:
   # Documentation check
   documentation:
     name: Documentation Check
-    runs-on: macos-latest
+    runs-on: macos-14
     needs: build-and-test
     
     steps:
@@ -117,7 +117,7 @@ jobs:
   # Integration tests (optional, only on main)
   integration-tests:
     name: Integration Tests
-    runs-on: macos-latest
+    runs-on: macos-14
     needs: build-and-test
     if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')
     
@@ -190,7 +190,7 @@ jobs:
   # Publish to Swift Package Registry (when available)
   publish:
     name: Publish Package
-    runs-on: macos-latest
+    runs-on: macos-14
     needs: release
     if: startsWith(github.ref, 'refs/tags/v') && !contains(github.ref, '-beta') && !contains(github.ref, '-alpha')
     

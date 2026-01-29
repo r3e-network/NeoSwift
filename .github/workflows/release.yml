@@ -8,7 +8,7 @@ on:
 jobs:
   validate:
     name: Validate Stable Release
-    runs-on: macos-latest
+    runs-on: macos-14
     outputs:
       version: ${{ steps.get_version.outputs.version }}
       version_number: ${{ steps.get_version.outputs.version_number }}
@@ -28,7 +28,7 @@ jobs:
     - name: Setup Swift
       uses: swift-actions/setup-swift@v1
       with:
-        swift-version: "5.9"
+        swift-version: "5.10"
     
     - name: Validate package
       run: |
@@ -104,7 +104,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-latest, ubuntu-22.04]
+        os: [macos-14, ubuntu-22.04]
         
     steps:
     - uses: actions/checkout@v4
@@ -112,7 +112,7 @@ jobs:
     - name: Setup Swift
       uses: swift-actions/setup-swift@v1
       with:
-        swift-version: "5.9"
+        swift-version: "5.10"
     
     - name: Build release
       run: swift build --configuration release
@@ -147,7 +147,7 @@ jobs:
 
   test-integration:
     name: Integration Tests
-    runs-on: macos-latest
+    runs-on: macos-14
     needs: [validate, security-audit]
     
     steps:
@@ -156,7 +156,7 @@ jobs:
     - name: Setup Swift
       uses: swift-actions/setup-swift@v1
       with:
-        swift-version: "5.9"
+        swift-version: "5.10"
     
     - name: Run integration tests
       env:
