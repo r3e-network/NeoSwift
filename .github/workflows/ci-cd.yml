@@ -8,7 +8,7 @@ on:
     branches: [ main ]
 
 env:
-  SWIFT_VERSION: "5.10"
+  SWIFT_VERSION: "5.9"
 
 jobs:
   # Build and test on multiple platforms
