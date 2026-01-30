@@ -20,7 +20,7 @@ jobs:
     - name: Setup Swift
       uses: swift-actions/setup-swift@v1
       with:
-        swift-version: "5.10"
+        swift-version: "5.9"
     
     - name: Cache Swift packages
       uses: actions/cache@v3
@@ -75,7 +75,7 @@ jobs:
     - name: Setup Swift
       uses: swift-actions/setup-swift@v1
       with:
-        swift-version: "5.10"
+        swift-version: "5.9"
     
     - name: Build for security analysis
       run: |

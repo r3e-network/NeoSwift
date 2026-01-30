@@ -28,7 +28,7 @@ jobs:
     - name: Setup Swift
       uses: swift-actions/setup-swift@v1
       with:
-        swift-version: "5.10"
+        swift-version: "5.9"
     
     - name: Validate package
       run: |
@@ -112,7 +112,7 @@ jobs:
     - name: Setup Swift
       uses: swift-actions/setup-swift@v1
       with:
-        swift-version: "5.10"
+        swift-version: "5.9"
     
     - name: Build release
       run: swift build --configuration release
@@ -156,7 +156,7 @@ jobs:
     - name: Setup Swift
       uses: swift-actions/setup-swift@v1
       with:
-        swift-version: "5.10"
+        swift-version: "5.9"
     
     - name: Run integration tests
       env:
