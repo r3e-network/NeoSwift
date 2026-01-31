@@ -1,5 +1,6 @@
 
 import BigInt
+import CryptoSwift
 import Foundation
 
 /*
@@ -227,7 +228,7 @@ extension NefFile: NeoSerializable {
         let file = try NefFile(compiler: compiler, sourceUrl: sourceUrl, methodTokens: methodTokens, script: script)
         let checksum = try reader.readBytes(NefFile.CHECKSUM_SIZE)
         guard file.checksum == checksum else {
-            throw NeoSwiftError.deserialization("NEF file checksum validation failed. Expected: \(file.checksum.hex), Got: \(checksum.hex)")
+            throw NeoSwiftError.deserialization("NEF file checksum validation failed. Expected: \(file.checksum.toHexString()), Got: \(checksum.toHexString())")
         }
         return file
     }

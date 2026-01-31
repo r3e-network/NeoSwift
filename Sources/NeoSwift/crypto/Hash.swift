@@ -17,7 +17,7 @@ public extension Bytes {
     func ripemd160() -> Bytes {
         var md = RIPEMD160()
         md.update(data: Data(self))
-        return md.finalize().bytes
+        return Array(md.finalize())
     }
     
     /// Performs a SHA256 followed by a RIPEMD160.

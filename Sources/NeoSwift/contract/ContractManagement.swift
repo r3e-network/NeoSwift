@@ -1,5 +1,6 @@
 
 import Foundation
+import CryptoSwift
 
 /// Represents a Management contract and provides methods to invoke it.
 public class ContractManagement: SmartContract {
