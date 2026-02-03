@@ -82,7 +82,7 @@ public class SecureECKeyPair {
     
     /// Create a legacy ECKeyPair (use only when absolutely necessary)
     public func toLegacyKeyPair() throws -> ECKeyPair {
-        return try withPrivateKey { privateKey in
+        return withPrivateKey { privateKey in
             ECKeyPair(privateKey: privateKey, publicKey: publicKey)
         }
     }

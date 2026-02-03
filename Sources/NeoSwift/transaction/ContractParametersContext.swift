@@ -6,6 +6,10 @@ public struct ContractParametersContext: Codable {
     public let data: String
     public let items: [String: ContextItem]
     public let network: Int
+    
+    private enum CodingKeys: String, CodingKey {
+        case type, hash, data, items, network
+    }
 
     public init(hash: String, data: String, items: [String : ContextItem]?, network: Int) {
         self.hash = hash
