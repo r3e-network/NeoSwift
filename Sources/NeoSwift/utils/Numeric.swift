@@ -37,7 +37,7 @@ public extension Numeric {
     
     var bigEndianBytes: Bytes {
         var int = self
-        return [UInt8](Data(bytes: &int, count: MemoryLayout.size(ofValue: self)))
+        return withUnsafeBytes(of: &int) { Array($0) }
     }
     
 }
