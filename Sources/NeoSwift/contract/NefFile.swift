@@ -217,7 +217,7 @@ extension NefFile: NeoSerializable {
         guard reader.readByte() == 0 else {
             throw NeoSwiftError.deserialization("Reserve bytes in NEF file must be 0.")
         }
-        let methodTokens: [MethodToken] = reader.readSerializableList()
+        let methodTokens: [MethodToken] = try reader.readSerializableList()
         guard reader.readUInt16() == 0 else {
             throw NeoSwiftError.deserialization("Reserve bytes in NEF file must be 0.")
         }

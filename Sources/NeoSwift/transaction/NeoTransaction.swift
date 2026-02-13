@@ -235,11 +235,11 @@ extension NeoTransaction: NeoSerializable {
         let version = reader.readByte(), nonce = Int(reader.readUInt32())
         let systemFee = Int(reader.readInt64()), networkFee = Int(reader.readInt64())
         let validUntilBlock = Int(reader.readUInt32())
-        let signers: [Signer] = reader.readSerializableList()
+        let signers: [Signer] = try reader.readSerializableList()
         let attributes = try readTransactionAttributes(reader, signers.count)
         let script = try reader.readVarBytes()
         var witnesses: [Witness] = []
-        if reader.available > 0 { witnesses = reader.readSerializableList() }
+        if reader.available > 0 { witnesses = try reader.readSerializableList() }
         return NeoTransaction(version: version, nonce: nonce,
                      validUntilBlock: validUntilBlock,
                      signers: signers, systemFee: systemFee,

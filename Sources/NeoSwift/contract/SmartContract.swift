@@ -66,7 +66,10 @@ public class SmartContract {
         guard case .integer = stackItem else {
             throw ContractError.unexpectedReturnType(stackItem.jsonValue, [StackItem.INTEGER_VALUE])
         }
-        return try stackItem.getInt()
+        guard let integer = stackItem.integer else {
+            throw ContractError.unexpectedReturnType("No integer value found", [StackItem.INTEGER_VALUE])
+        }
+        return integer
     }
     
     /// Sends an `invokefunction` RPC call to the given contract function expecting an Integer as return type.

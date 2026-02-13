@@ -142,15 +142,15 @@ extension Signer: NeoSerializable {
             var count = 0, errorLabel = ""
             switch scope {
             case .customContracts:
-                allowedContracts = reader.readSerializableList()
+                allowedContracts = try reader.readSerializableList()
                 count = allowedContracts.count
                 errorLabel = "allowed contracts"
             case .customGroups:
-                allowedGroups = reader.readSerializableList()
+                allowedGroups = try reader.readSerializableList()
                 count = allowedGroups.count
                 errorLabel = "allowed contract groups"
             case .witnessRules:
-                rules = reader.readSerializableList()
+                rules = try reader.readSerializableList()
                 count = rules.count
                 errorLabel = "rules"
             default: break
