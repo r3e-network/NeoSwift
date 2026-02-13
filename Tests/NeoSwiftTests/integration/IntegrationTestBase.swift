@@ -75,7 +75,7 @@ class IntegrationTestBase: XCTestCase {
     func getAccountBalance(_ account: Account, token: Hash160) async throws -> Int {
         // Get NEP-17 balances for the account's script hash
         let scriptHash = try account.getScriptHash()
-        let response = try await neoSwift.getNep17Balances(scriptHash.toAddress()).send()
+        let response = try await neoSwift.getNep17Balances(scriptHash).send()
         let balances = response.balances?.balances ?? []
         return balances.first { $0.assetHash == token }?.amount.integerValue ?? 0
     }
