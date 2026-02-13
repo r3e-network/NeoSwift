@@ -51,7 +51,7 @@ public enum ConstantTime {
     ///   - b: Second value
     /// - Returns: Selected value
     public static func select<T: FixedWidthInteger>(_ condition: Bool, _ a: T, _ b: T) -> T {
-        let mask = T(condition ? -1 : 0)
+        let mask: T = condition ? ~T.zero : T.zero
         return (a & mask) | (b & ~mask)
     }
     
