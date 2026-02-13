@@ -77,7 +77,10 @@ class IntegrationTestBase: XCTestCase {
         let scriptHash = try account.getScriptHash()
         let response = try await neoSwift.getNep17Balances(scriptHash).send()
         let balances = response.balances?.balances ?? []
-        return balances.first { $0.assetHash == token }?.amount.integerValue ?? 0
+        guard let amount = balances.first(where: { $0.assetHash == token })?.amount else {
+            return 0
+        }
+        return try Int(string: amount)
     }
 }
 

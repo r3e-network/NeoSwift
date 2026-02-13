@@ -17,7 +17,7 @@ public class JsonRpc2_0Rx {
     }
     
     public func blockPublisher(_ fullTransactionObjects: Bool, _ pollingInterval: Int) -> AnyPublisher<NeoGetBlock, Error> {
-        return blockIndexPublisher(pollingInterval).syncMap { index in
+        return blockIndexPublisher(pollingInterval).asyncMap { index in
             return try await self.neoSwift.getBlock(index, fullTransactionObjects).send()
         }.eraseToAnyPublisher()
     }
@@ -25,7 +25,7 @@ public class JsonRpc2_0Rx {
     public func replayBlocksPublisher(_ startBlock: Int, _ endBlock: Int, _ fullTransactionObjects: Bool, _ ascending: Bool = true) -> AnyPublisher<NeoGetBlock, Error> {
         var blocks: [Int] = Array(startBlock...endBlock)
         if !ascending { blocks.reverse() }
-        return blocks.publisher.setFailureType(to: Error.self).syncMap { block in
+        return blocks.publisher.setFailureType(to: Error.self).asyncMap { block in
             return try await self.neoSwift.getBlock(block, fullTransactionObjects).send()
         }.eraseToAnyPublisher()
     }
@@ -47,7 +47,7 @@ public class JsonRpc2_0Rx {
     }
     
     public func latestBlockIndexPublisher() -> AnyPublisher<Int, Error> {
-        return Just("").setFailureType(to: Error.self).syncMap { _ in
+        return Just("").setFailureType(to: Error.self).asyncMap { _ in
             return try await self.neoSwift.getBlockCount().send().getResult() - 1
         }.eraseToAnyPublisher()
     }

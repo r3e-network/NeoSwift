@@ -299,7 +299,7 @@ public class NonFungibleToken: Token {
         guard let map = stackItem.map else {
             throw ContractError.unexpectedReturnType("No map found in stack item", [StackItem.MAP_VALUE])
         }
-        return try map.reduce(into: .init()) { partialResult, keyValue in
+        return map.reduce(into: .init()) { partialResult, keyValue in
             if case .any(let v) = keyValue.value, v == nil { return }
             do {
                 let key = try keyValue.key.getString()

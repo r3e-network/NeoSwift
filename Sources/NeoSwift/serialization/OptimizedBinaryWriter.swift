@@ -113,11 +113,15 @@ public class OptimizedBinaryWriter {
     }
     
     public func writeSerializableFixed(_ v: NeoSerializable) {
-        v.serialize(self as! BinaryWriter)
+        let tempWriter = BinaryWriter()
+        v.serialize(tempWriter)
+        write(tempWriter.toArray())
     }
     
     public func writeSerializableFixed(_ v: [NeoSerializable]) {
-        v.forEach { $0.serialize(self as! BinaryWriter) }
+        v.forEach { value in
+            writeSerializableFixed(value)
+        }
     }
     
     public func writeUInt16(_ v: UInt16) {
