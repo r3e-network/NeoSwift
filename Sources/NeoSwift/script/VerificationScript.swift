@@ -133,6 +133,7 @@ public class VerificationScript: NeoSerializable, Hashable {
                 }
                 return keys
             }
+            throw TransactionError.scriptFormat("The verification script is in an incorrect format. No public keys can be read from it.")
         } catch let error as TransactionError {
             throw error
         } catch {
