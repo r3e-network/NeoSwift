@@ -1,3 +1,4 @@
+import BigInt
 import XCTest
 @testable import NeoSwift
 
@@ -51,8 +52,8 @@ final class SecurityTests: XCTestCase {
         let signature = secureKeyPair.sign(messageHash: messageHash)
         
         XCTAssertEqual(signature.count, 2)
-        XCTAssertGreaterThan(signature[0].asInt() ?? 0, 0)
-        XCTAssertGreaterThan(signature[1].asInt() ?? 0, 0)
+        XCTAssertTrue(signature[0] > BInt.ZERO)
+        XCTAssertTrue(signature[1] > BInt.ZERO)
         
         // Test address generation
         let address = try secureKeyPair.getAddress()

@@ -8,6 +8,9 @@ final class WalletIntegrationTests: IntegrationTestBase {
         // Create a new wallet with multiple accounts
         let account1 = try Account.create()
         let account2 = try Account.create()
+        let exportPassword = "TestPassword123!"
+        try account1.encryptPrivateKey(exportPassword)
+        try account2.encryptPrivateKey(exportPassword)
         
         let wallet = try Wallet.withAccounts([account1, account2])
             .name("TestWallet")

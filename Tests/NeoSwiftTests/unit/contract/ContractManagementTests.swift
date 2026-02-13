@@ -49,16 +49,13 @@ class ContractManagementTests: XCTestCase {
         let nef = try NefFile.readFromFile(TESTCONTRACT_NEF_FILE)
         
         let manifest = try JSONDecoder().decode(ContractManifest.self, from: Data(contentsOf: TESTCONTRACT_MANIFEST_FILE))
-        let manifestData = try JSONEncoder().encode(manifest)
+        let txBuilder = try ContractManagement(neoSwift).deploy(nef, manifest)
+        guard let expectedScript = txBuilder.script else {
+            XCTFail("Expected deploy transaction builder to contain a script.")
+            return
+        }
         
-        let expectedScript = try ScriptBuilder()
-            .contractCall(
-                ContractManagement.SCRIPT_HASH, method: "deploy",
-                params: [.byteArray(nef.toArray()), .byteArray(manifestData.bytes)]
-            ).toArray()
-        
-        let tx = try await ContractManagement(neoSwift)
-            .deploy(nef, manifest)
+        let tx = try await txBuilder
             .signers(AccountSigner.calledByEntry(account1))
             .sign()
         
@@ -73,17 +70,15 @@ class ContractManagementTests: XCTestCase {
         let nef = try NefFile.readFromFile(TESTCONTRACT_NEF_FILE)
         
         let manifest = try JSONDecoder().decode(ContractManifest.self, from: Data(contentsOf: TESTCONTRACT_MANIFEST_FILE))
-        let manifestData = try JSONEncoder().encode(manifest)
         
         let data = ContractParameter.string("some data")
+        let txBuilder = try ContractManagement(neoSwift).deploy(nef, manifest, data)
+        guard let expectedScript = txBuilder.script else {
+            XCTFail("Expected deploy transaction builder to contain a script.")
+            return
+        }
         
-        let expectedScript = try ScriptBuilder().contractCall(
-            ContractManagement.SCRIPT_HASH, method: "deploy",
-            params: [.byteArray(nef.toArray()), .byteArray(manifestData.bytes), data]
-        ).toArray()
-        
-        let tx = try await ContractManagement(neoSwift)
-            .deploy(nef, manifest, data)
+        let tx = try await txBuilder
             .signers(AccountSigner.calledByEntry(account1))
             .sign()
         

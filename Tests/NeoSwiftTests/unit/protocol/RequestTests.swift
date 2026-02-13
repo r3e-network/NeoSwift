@@ -1,4 +1,5 @@
 
+import Foundation
 import XCTest
 @testable import NeoSwift
 
@@ -1210,7 +1211,7 @@ class RequestTests: XCTestCase {
             guard let body = request.httpBody else {
                 return XCTFail("No request body")
             }
-            XCTAssertEqual(String(data: body, encoding: .ascii)!, expected)
+            self.assertJsonRequestBody(body, equals: expected)
         }
         let httpService = HttpService(urlSession: mockUrlSession)
         let neoSwift = NeoSwift.build(httpService)
@@ -1224,7 +1225,7 @@ class RequestTests: XCTestCase {
             guard let body = request.httpBody else {
                 return XCTFail("No request body")
             }
-            XCTAssertEqual(String(data: body, encoding: .ascii)!, expected)
+            self.assertJsonRequestBody(body, equals: expected)
         }
         let httpService = HttpService(urlSession: mockUrlSession)
         let neoSwift: NeoSwiftExpress = NeoSwiftExpress.build(httpService)
@@ -1240,6 +1241,36 @@ class RequestTests: XCTestCase {
             semaphore.signal()
         }
         semaphore.wait()
+    }
+
+    private func assertJsonRequestBody(_ body: Data, equals expected: String) {
+        guard let expectedData = expected.data(using: .utf8) else {
+            XCTFail("Could not encode expected JSON request body.")
+            return
+        }
+
+        do {
+            let actualJson = try JSONSerialization.jsonObject(with: body)
+            let expectedJson = try JSONSerialization.jsonObject(with: expectedData)
+            let actualNormalized = try normalizedJsonString(actualJson)
+            let expectedNormalized = try normalizedJsonString(expectedJson)
+            XCTAssertEqual(actualNormalized, expectedNormalized)
+        } catch {
+            let actualBody = String(data: body, encoding: .utf8) ?? "<non-utf8 body>"
+            XCTFail("""
+                    Failed to compare JSON request bodies: \(error)
+                    actual: \(actualBody)
+                    expected: \(expected)
+                    """)
+        }
+    }
+
+    private func normalizedJsonString(_ jsonObject: Any) throws -> String {
+        let data = try JSONSerialization.data(withJSONObject: jsonObject, options: [.sortedKeys])
+        guard let jsonString = String(data: data, encoding: .utf8) else {
+            throw NeoSwiftError.illegalState("Could not decode normalized JSON to UTF-8 string.")
+        }
+        return jsonString
     }
     
 }

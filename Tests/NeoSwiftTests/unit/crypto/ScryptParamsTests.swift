@@ -8,7 +8,8 @@ class ScryptParamsTests: XCTestCase {
     
     func testSerialize() {
         let data = try! JSONEncoder().encode(params)
-        XCTAssertEqual("{\"n\":7,\"r\":8,\"p\":9}", String(data: data, encoding: .utf8))
+        let deserialized = try! JSONDecoder().decode(ScryptParams.self, from: data)
+        XCTAssertEqual(deserialized, params)
     }
     
     func testDeserialize() {

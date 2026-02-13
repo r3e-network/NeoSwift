@@ -47,7 +47,7 @@ extension Publisher {
     func asyncMap<T>(
         _ transform: @escaping (Output) async throws -> T
     ) -> Publishers.FlatMap<Future<T, Error>, Self> {
-        flatMap { value in
+        flatMap(maxPublishers: .max(1)) { value in
             Future<T, Error> { promise in
                 Task {
                     do {

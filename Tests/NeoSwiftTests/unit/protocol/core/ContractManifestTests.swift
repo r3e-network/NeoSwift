@@ -1,4 +1,5 @@
 
+import Foundation
 import XCTest
 @testable import NeoSwift
 
@@ -27,7 +28,10 @@ class ContractManifestTests: XCTestCase {
     public func testSerializeWithWildCardPermissionMethod() {
         let contractPermission = ContractManifest.ContractPermission(contract: "NeoToken", methods: ["*"])
         let contractManifest = ContractManifest(permissions: [contractPermission])
-        XCTAssert(toJsonString(contractManifest).contains("\"permissions\":[{\"methods\":\"*\",\"contract\":\"NeoToken\"}]"))
+        let permissions = permissionsFromJson(contractManifest)
+        XCTAssertEqual(permissions.count, 1)
+        XCTAssertEqual(permissions[0]["contract"] as? String, "NeoToken")
+        XCTAssertEqual(permissions[0]["methods"] as? String, "*")
     }
     
     public func testSerializeWithNoPermissions() {
@@ -38,7 +42,10 @@ class ContractManifestTests: XCTestCase {
     public func testSerializeWithPermissionsOneMethod() {
         let contractPermission = ContractManifest.ContractPermission(contract: "NeoToken", methods: ["method"])
         let contractManifest = ContractManifest(permissions: [contractPermission])
-        XCTAssert(toJsonString(contractManifest).contains("\"permissions\":[{\"methods\":[\"method\"],\"contract\":\"NeoToken\"}]"))
+        let permissions = permissionsFromJson(contractManifest)
+        XCTAssertEqual(permissions.count, 1)
+        XCTAssertEqual(permissions[0]["contract"] as? String, "NeoToken")
+        XCTAssertEqual(permissions[0]["methods"] as? [String], ["method"])
     }
     
     public func testSerializeWithMultiplePermissions() {
@@ -46,7 +53,14 @@ class ContractManifestTests: XCTestCase {
         let contractPermission2 = ContractManifest.ContractPermission(contract: "GasToken", methods: ["method1", "method2"])
         let contractPermission3 = ContractManifest.ContractPermission(contract: "SomeToken", methods: ["*"])
         let contractManifest = ContractManifest(permissions: [contractPermission1, contractPermission2, contractPermission3])
-        XCTAssert(toJsonString(contractManifest).contains("\"permissions\":[{\"methods\":[\"method\"],\"contract\":\"NeoToken\"},{\"methods\":[\"method1\",\"method2\"],\"contract\":\"GasToken\"},{\"methods\":\"*\",\"contract\":\"SomeToken\"}]"))
+        let permissions = permissionsFromJson(contractManifest)
+        XCTAssertEqual(permissions.count, 3)
+        XCTAssertEqual(permissions[0]["contract"] as? String, "NeoToken")
+        XCTAssertEqual(permissions[0]["methods"] as? [String], ["method"])
+        XCTAssertEqual(permissions[1]["contract"] as? String, "GasToken")
+        XCTAssertEqual(permissions[1]["methods"] as? [String], ["method1", "method2"])
+        XCTAssertEqual(permissions[2]["contract"] as? String, "SomeToken")
+        XCTAssertEqual(permissions[2]["methods"] as? String, "*")
     }
     
     public func testSetGroups() {
@@ -93,6 +107,12 @@ class ContractManifestTests: XCTestCase {
     private func toJsonString(_ c: ContractManifest) -> String {
         let json = try! JSONEncoder().encode(c)
         return String(data: json, encoding: .utf8)!
+    }
+
+    private func permissionsFromJson(_ c: ContractManifest) -> [[String: Any]] {
+        let json = try! JSONEncoder().encode(c)
+        let object = try! JSONSerialization.jsonObject(with: json) as! [String: Any]
+        return object["permissions"] as? [[String: Any]] ?? []
     }
     
 }
