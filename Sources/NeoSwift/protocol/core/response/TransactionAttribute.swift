@@ -127,7 +127,7 @@ extension TransactionAttribute: NeoSerializable {
         writer.writeByte(byte)
         switch self {
         case .oracleResponse(let id, let responseCode, let result):
-            writer.write(BInt(id).asMagnitudeBytes().reversed())
+            writer.writeInt64(Int64(id))
             writer.writeByte(responseCode.byte)
             writer.writeVarBytes(result.base64Decoded)
         case .notValidBefore(let height):
