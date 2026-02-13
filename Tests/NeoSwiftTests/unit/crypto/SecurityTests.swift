@@ -51,8 +51,8 @@ final class SecurityTests: XCTestCase {
         let signature = secureKeyPair.sign(messageHash: messageHash)
         
         XCTAssertEqual(signature.count, 2)
-        XCTAssertGreaterThan(signature[0], 0)
-        XCTAssertGreaterThan(signature[1], 0)
+        XCTAssertGreaterThan(signature[0].asInt(), 0)
+        XCTAssertGreaterThan(signature[1].asInt(), 0)
         
         // Test address generation
         let address = try secureKeyPair.getAddress()
