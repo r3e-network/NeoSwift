@@ -22,6 +22,7 @@ class MockURLSession: URLRequester {
     private var dataMap: [String: [Data]]? = nil
     private var invokeFunctions: [String: Data]? = nil
     private var error: Error? = nil
+    private let stateLock = NSLock()
     
     private var requestInterceptor: ((URLRequest) -> Void)?
     
@@ -76,8 +77,13 @@ class MockURLSession: URLRequester {
                 }
                 return (.init(), nil)
             } else {
+                stateLock.lock()
+                defer { stateLock.unlock() }
+                guard let methodData = dataMap[method], !methodData.isEmpty else {
+                    return (defaultData, nil)
+                }
                 let i = dataIs[method] ?? 0
-                let data = i >= dataMap[method]!.count ? dataMap[method]![0] : dataMap[method]![i]
+                let data = i >= methodData.count ? methodData[0] : methodData[i]
                 dataIs[method] = i + 1
                 return (data, nil)
             }
@@ -85,8 +91,10 @@ class MockURLSession: URLRequester {
         if let error = error {
             throw error
         }
+        stateLock.lock()
         let d = data?[i] ?? data?[0] ?? defaultData
         i += 1
+        stateLock.unlock()
         return (d, nil)
     }
     
