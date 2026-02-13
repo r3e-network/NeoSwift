@@ -7,6 +7,7 @@ public enum ProtocolError: LocalizedError {
     case invocationFaultState(_ error: String)
     case clientConnection(_ message: String)
     case stackItemCastError(_ item: StackItem, _ target: String)
+    case illegalState(_ message: String)
     
     public var errorDescription: String? {
         switch self {
@@ -14,6 +15,7 @@ public enum ProtocolError: LocalizedError {
         case .invocationFaultState(let error): return "The invocation resulted in a FAULT VM state. The VM exited due to the following exception: \(error)"
         case .clientConnection(let message): return message
         case .stackItemCastError(let item, let target): return "Cannot cast stack item \(item.jsonValue) to a \(target)."
+        case .illegalState(let message): return message
         }
     }
 }
