@@ -1,7 +1,7 @@
 
 import Foundation
 
-public final class BinaryWriter {
+public class BinaryWriter {
     
     private var array: Bytes = []
     
