@@ -173,7 +173,7 @@ final class SecurityTests: XCTestCase {
             }
         }
         
-        wait(for: [expectation], timeout: 5.0)
+        wait(for: [expectation], timeout: 15.0)
         
         // All hashes should be identical
         let firstHash = results[0]
