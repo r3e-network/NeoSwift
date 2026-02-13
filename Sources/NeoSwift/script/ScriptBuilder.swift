@@ -2,7 +2,7 @@
 import BigInt
 import Foundation
 
-public class ScriptBuilder {
+public final class ScriptBuilder {
     
     let writer = BinaryWriter()
     

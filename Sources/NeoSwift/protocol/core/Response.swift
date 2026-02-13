@@ -29,7 +29,10 @@ public class Response<T: Codable>: Codable, HasRawResponse {
         if let error = error {
             throw ProtocolError.rpcResponseError(error.string)
         }
-        return result!
+        guard let result = result else {
+            throw ProtocolError.rpcResponseError("No result in response and no error")
+        }
+        return result
     }
     
     public struct Error: LocalizedError, Codable, Hashable {

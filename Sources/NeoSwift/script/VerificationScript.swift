@@ -133,8 +133,11 @@ public class VerificationScript: NeoSerializable, Hashable {
                 }
                 return keys
             }
-        } catch {}
-        throw TransactionError.scriptFormat("The verification script is in an incorrect format. No public keys can be read from it.")
+        } catch let error as TransactionError {
+            throw error
+        } catch {
+            throw TransactionError.scriptFormat("Failed to parse verification script: \(error.localizedDescription)")
+        }
     }
     
     public func serialize(_ writer: BinaryWriter) {

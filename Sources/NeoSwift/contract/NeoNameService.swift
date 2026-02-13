@@ -291,7 +291,10 @@ public class NeoNameService: NonFungibleToken {
     
     private func deserializeNameState(_ invocationResult: InvocationResult) throws -> NameState {
         try throwIfFaultState(invocationResult)
-        let map = try mapStackItem(invocationResult).map!
+        let stackItem = try mapStackItem(invocationResult)
+        guard let map = stackItem.map else {
+            throw ContractError.unexpectedReturnType("No map found", [StackItem.MAP_VALUE])
+        }
         guard let name = map[NeoNameService.NAME_PROPERTY]?.string else {
             throw NeoSwiftError.illegalState("'name' property not found in stack item")
         }

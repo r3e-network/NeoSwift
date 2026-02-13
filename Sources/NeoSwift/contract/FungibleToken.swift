@@ -32,9 +32,18 @@ public class FungibleToken: Token {
     /// - Parameter wallet: The wallet to fetch the balance for
     /// - Returns: The token balance
     public func getBalanceOf(_ wallet: Wallet) async throws -> Int {
-        var sum = 0
-        for account in wallet.accounts { sum += try await getBalanceOf(account) }
-        return sum
+        try await withThrowingTaskGroup(of: Int.self) { group in
+            for account in wallet.accounts {
+                group.addTask {
+                    try await self.getBalanceOf(account)
+                }
+            }
+            var sum = 0
+            for try await balance in group {
+                sum += balance
+            }
+            return sum
+        }
     }
     
     /// Creates a transfer transaction. The `from` account is set as a signer of the transaction.

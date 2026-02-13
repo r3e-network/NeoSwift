@@ -229,7 +229,12 @@ public class NonFungibleToken: Token {
     /// - Returns: A list of owners of the token.
     public func ownersOf(_ tokenId: Bytes) async throws -> Iterator<Hash160> {
         try await throwIfNonDivisibleNFT()
-        return try await callFunctionReturningIterator(NonFungibleToken.OWNER_OF, [.byteArray(tokenId)], mapper: { try Hash160.fromAddress($0.address!) })
+        return try await callFunctionReturningIterator(NonFungibleToken.OWNER_OF, [.byteArray(tokenId)], mapper: { item in
+            guard let address = item.address else {
+                throw ContractError.unexpectedReturnType("No address found in owner", ["byteString"])
+            }
+            return try Hash160.fromAddress(address)
+        })
     }
     
     private func throwIfNonDivisibleNFT() async throws {
@@ -291,9 +296,24 @@ public class NonFungibleToken: Token {
     }
     
     private func deserializeProperties<T>(_ stackItem: StackItem, isClass: Bool = false) throws -> [String : T] {
-        return try stackItem.map!.reduce(into: .init()) { partialResult, keyValue in
+        guard let map = stackItem.map else {
+            throw ContractError.unexpectedReturnType("No map found in stack item", [StackItem.MAP_VALUE])
+        }
+        return try map.reduce(into: .init()) { partialResult, keyValue in
             if case .any(let v) = keyValue.value, v == nil { return }
-            try partialResult[keyValue.key.getString()] = (isClass ? keyValue.value as! T : keyValue.value.getString() as! T)
+            do {
+                let key = try keyValue.key.getString()
+                if isClass {
+                    guard let value = keyValue.value as? T else { return }
+                    partialResult[key] = value
+                } else {
+                    let value = try keyValue.value.getString()
+                    guard let typedValue = value as? T else { return }
+                    partialResult[key] = typedValue
+                }
+            } catch {
+                return
+            }
         }
     }
     

@@ -160,7 +160,7 @@ class NefFileTests: XCTestCase {
     }
     
     public func testSerializeDeserializeNefFileWithSourceUrl() throws {
-        let url = "github.com/crisogray/NeoSwift"
+        let url = "github.com/r3e-network/NeoSwift"
         let nef = try NefFile(compiler: "neo-core-v3.0", sourceUrl: url, methodTokens: [], script: "00fd411af77b67".bytesFromHex)
         
         let bytes = nef.toArray()

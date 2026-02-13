@@ -196,8 +196,11 @@ extension ECPublicKey: NeoSerializable {
     }
     
     public func serialize(_ writer: BinaryWriter) {
-        do { writer.write(try getEncoded(compressed: true)) }
-        catch {}
+        do {
+            try writer.write(getEncoded(compressed: true))
+        } catch {
+            writer.write([])
+        }
     }
     
     /// Deserializes an EC point, which is assumed to be on the secp256r1 curve.

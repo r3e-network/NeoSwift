@@ -17,10 +17,12 @@ public class Token: SmartContract {
     /// The return value is retrieved form the neo-node only once and then cached.
     /// - Returns: The total supply
     public func getTotalSupply() async throws -> Int {
-        guard let totalSupply = totalSupply else {
-            return try await callFunctionReturningInt(Token.TOTAL_SUPPLY)
+        if let totalSupply = totalSupply {
+            return totalSupply
         }
-        return totalSupply
+        let supply = try await callFunctionReturningInt(Token.TOTAL_SUPPLY)
+        self.totalSupply = supply
+        return supply
     }
     
     /// Gets the number of fractions that one unit of this token can be divided into.
@@ -28,10 +30,12 @@ public class Token: SmartContract {
     /// The return value is retrieved form the neo-node only once and then cached.
     /// - Returns: The number of fractions
     public func getDecimals() async throws -> Int {
-        guard let decimals = decimals else {
-            return try await callFunctionReturningInt(Token.DECIMALS)
+        if let decimals = decimals {
+            return decimals
         }
-        return decimals
+        let dec = try await callFunctionReturningInt(Token.DECIMALS)
+        self.decimals = dec
+        return dec
     }
     
     /// Gets the symbol of this token.
@@ -39,13 +43,15 @@ public class Token: SmartContract {
     /// The return value is retrieved form the neo-node only once and then cached.
     /// - Returns: The symbol
     public func getSymbol() async throws -> String {
-        guard let symbol = symbol else {
-            return try await callFunctionReturningString(Token.SYMBOL)
+        if let symbol = symbol {
+            return symbol
         }
-        return symbol
+        let sym = try await callFunctionReturningString(Token.SYMBOL)
+        self.symbol = sym
+        return sym
     }
     
-    /// Converts the token amount from a decimal point number to the amount in token fractions according to this token's number of dceimals
+    /// Converts the token amount from a decimal point number to the amount in token fractions according to this token's number of decimals
     ///
     /// Use this method to convert e.g. 1.5 GAS to its fraction value 150_000_000.
     /// - Parameter amount: The token amount in decimals
@@ -54,7 +60,7 @@ public class Token: SmartContract {
         return try await Token.toFractions(amount, getDecimals())
     }
     
-    /// Converts the token amount from a decimal point number to the amount in token fractions according to this token's number of dceimals
+    /// Converts the token amount from a decimal point number to the amount in token fractions according to this token's number of decimals
     ///
     /// Use this method to convert e.g. a token amount of 25.5 for a token with 4 decimals to 255_000.
     /// - Parameter amount: The token amount in decimals

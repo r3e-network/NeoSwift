@@ -2,7 +2,7 @@
 import BigInt
 import Foundation
 
-public class BinaryReader {
+public final class BinaryReader {
     
     public var position: Int = 0
     public var available: Int {
@@ -100,22 +100,32 @@ public class BinaryReader {
         return try T.deserialize(self)
     }
     
-    public func readSerializableListVarBytes<T: NeoSerializable>() -> [T] {
+    public func readSerializableListVarBytes<T: NeoSerializable>() throws -> [T] {
         let length = readVarInt(0x10000000)
         var bytesRead = 0, offset = position
         var list: [T] = []
         while bytesRead < length {
-            if let t = try? T.deserialize(self) { list.append(t) }
+            do {
+                let t = try T.deserialize(self)
+                list.append(t)
+            } catch {
+                throw NeoSwiftError.deserialization("Failed to deserialize element at position \(position): \(error.localizedDescription)")
+            }
             bytesRead = position - offset
         }
         return list
     }
     
-    public func readSerializableList<T: NeoSerializable>() -> [T] {
+    public func readSerializableList<T: NeoSerializable>() throws -> [T] {
         let length = readVarInt(0x10000000)
         var list: [T] = []
         for _ in 0..<length {
-            if let t = try? T.deserialize(self) { list.append(t) }
+            do {
+                let t = try T.deserialize(self)
+                list.append(t)
+            } catch {
+                throw NeoSwiftError.deserialization("Failed to deserialize element at position \(position): \(error.localizedDescription)")
+            }
         }
         return list
     }

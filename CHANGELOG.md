@@ -7,6 +7,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.2.0] - 2026-02-13
+
+### Security
+- Fixed empty catch blocks that could silently swallow errors (VerificationScript.swift, ECKeyPair.swift)
+
+### Fixed
+- Fixed cache bug in Token - getTotalSupply, getDecimals, getSymbol now properly cache results
+- Fixed force unwrapping issues in TransactionBuilder and NeoTransaction
+- Fixed silent error swallowing in BinaryReader deserialization
+- Fixed performance issue - wallet balance fetching now parallelized using TaskGroup
+- Fixed potential nil dereference in NeoTransaction.sender
+- Fixed typos in comments (Token.swift, NeoTransaction.swift)
+- Fixed Wallet.swift - changed defaultAccountHash from implicit unwrap to optional
+- Fixed Response.swift - added guard for result nil check
+- Fixed Request.swift - added guard for neoSwiftService nil check
+- Fixed NeoTransaction.swift - removed try! force unwrap in track() method
+- Fixed OptimizedBinaryWriter.swift - added empty bytes check before baseAddress access
+- Fixed NeoNameService.swift - replaced .map! with safe guard check
+- Fixed NNSName.swift - replaced first!/last! with optional binding
+- Fixed NeoToken.swift - replaced list! with guard check
+- Fixed force unwrapping issues in SmartContract.swift (string, integer, boolean, iteratorId access)
+- Fixed force unwrapping issues in Wallet.swift (defaultAccount, removeAccount, withAccounts, getNep17TokenBalances)
+- Fixed force unwrapping issues in Account.swift (decryptPrivateKey, encryptPrivateKey, fromNEP6Account)
+- Fixed force unwrapping issues in NonFungibleToken.swift (ownersOf, deserializeProperties)
+- Fixed BlockIndexPolling thread safety - now uses .main queue and safe optional handling
+
+### Changed
+- Added final modifier to core non-inheritable classes for compiler optimization
+- Updated Neo N3 compatibility to v3.9.1
+- Improved error messages in NeoSwiftError for better debugging
+
 ## [2.1.0] - 2026-01-21
 
 ### Added

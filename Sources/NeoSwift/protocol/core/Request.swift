@@ -17,7 +17,10 @@ public struct Request<T, U>: Codable where T: Response<U> {
     }
     
     public func send() async throws -> T {
-        return try await neoSwiftService!.send(self)
+        guard let service = neoSwiftService else {
+            throw ProtocolError.illegalState("NeoSwiftService not initialized")
+        }
+        return try await service.send(self)
     }
     
     enum CodingKeys: CodingKey {

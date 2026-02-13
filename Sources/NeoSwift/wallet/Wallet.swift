@@ -11,7 +11,7 @@ public class Wallet {
     public private(set) var version: String
     public private(set) var scryptParams: ScryptParams
     private var accountsMap: [Hash160: Account] = [:]
-    private var defaultAccountHash: Hash160!
+    private var defaultAccountHash: Hash160?
     
     public var accounts: [Account] {
         return accountsMap.sorted(by: { return $0.key < $1.key }).map(\.value)
@@ -19,7 +19,8 @@ public class Wallet {
     
     /// Tthe default account of this wallet.
     public var defaultAccount: Account? {
-        return accountsMap[defaultAccountHash]!
+        guard let defaultAccountHash = defaultAccountHash else { return nil }
+        return accountsMap[defaultAccountHash]
     }
     
     public init() {
@@ -111,7 +112,9 @@ public class Wallet {
         }
         _ = accountsMap[accountHash]?.wallet(nil)
         if accountHash == defaultAccount?.scriptHash {
-            let newDefault = accountsMap.keys.first(where: { $0 != accountHash })!
+            guard let newDefault = accountsMap.keys.first(where: { $0 != accountHash }) else {
+                throw NeoSwiftError.illegalState("Could not find a new default account after removal")
+            }
             try _ = defaultAccount(newDefault)
         }
         return accountsMap.removeValue(forKey: accountHash) != nil
@@ -177,8 +180,7 @@ public class Wallet {
         var balances: [Hash160: Int] = [:]
         for (_, account) in accountsMap {
             for (key, value) in try await account.getNep17Balances(neoSwift) {
-                if balances[key] != nil { balances[key]! += value }
-                else { balances[key] = value }
+                balances[key, default: 0] += value
             }
         }
         return balances
@@ -215,10 +217,10 @@ public class Wallet {
     /// - Parameter accounts: The accounts to add to the new wallet
     /// - Returns: The new wallet
     public static func withAccounts(_ accounts: [Account]) throws -> Wallet {
-        guard !accounts.isEmpty else {
+        guard let firstAccount = accounts.first else {
             throw NeoSwiftError.illegalState("No accounts provided to initialize a wallet.")
         }
-        return try Wallet().addAccounts(accounts).defaultAccount(accounts.first!.getScriptHash())
+        return try Wallet().addAccounts(accounts).defaultAccount(firstAccount.getScriptHash())
     }
     
     public func holdsAccount(_ accountHash: Hash160) -> Bool {

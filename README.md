@@ -2,11 +2,11 @@
 # NeoSwift 🛡️
 
 [![Swift 5.9+](https://img.shields.io/badge/Swift-5.9+-blue.svg)](https://swift.org)
-[![Platforms](https://img.shields.io/badge/Platforms-iOS%20|%20macOS%20|%20tvOS%20|%20watchOS-green.svg)](https://github.com/crisogray/NeoSwift)
+[![Platforms](https://img.shields.io/badge/Platforms-iOS%20|%20macOS%20|%20tvOS%20|%20watchOS-green.svg)](https://github.com/r3e-network/NeoSwift)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/crisogray/NeoSwift/blob/main/LICENSE)
 [![Security](https://img.shields.io/badge/Security-Production%20Ready-brightgreen.svg)](docs/SECURITY.md)
 
-NeoSwift is a **production-ready, security-first** Swift SDK for interacting with the Neo blockchain from iOS and Mac devices. It maintains the same interface as the established Java/Android SDK [neow3j](https://github.com/neow3j/neow3j) while providing enhanced security features and performance optimizations. Compatible with Neo N3 v3.9 RPC.
+NeoSwift is a **production-ready, security-first** Swift SDK for interacting with the Neo blockchain from iOS and Mac devices. It maintains the same interface as the established Java/Android SDK [neow3j](https://github.com/neow3j/neow3j) while providing enhanced security features and performance optimizations. Compatible with Neo N3 v3.9.1 RPC. Maintained by [r3e-network](https://github.com/r3e-network).
 
 ## ✨ Key Features
 
@@ -15,7 +15,7 @@ NeoSwift is a **production-ready, security-first** Swift SDK for interacting wit
 - 🧪 **Thoroughly Tested**: Comprehensive security and integration test suites
 - 📱 **Multi-Platform**: iOS 13+, macOS 10.15+, tvOS 13+, watchOS 6+
 - 🔄 **neow3j Compatible**: Familiar API for Java developers
-- ✅ **Neo N3 v3.9 RPC**: Coverage for current node methods and responses
+- ✅ **Neo N3 v3.9.1 RPC**: Coverage for current node methods and responses
 
 ## 📦 Installation
 
@@ -24,7 +24,7 @@ NeoSwift is a **production-ready, security-first** Swift SDK for interacting wit
 Add to your `Package.swift`:
 ```swift
 dependencies: [
-    .package(url: "https://github.com/crisogray/NeoSwift", from: "2.1.0")
+    .package(url: "https://github.com/r3e-network/NeoSwift", from: "2.2.0")
 ]
 ```
 

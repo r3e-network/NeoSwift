@@ -44,8 +44,11 @@ public class OptimizedBinaryWriter {
     
     public func write(_ bytes: Bytes) {
         ensureCapacity(bytes.count)
+        guard !bytes.isEmpty else { return }
         bytes.withUnsafeBytes { src in
-            buffer.advanced(by: position).initialize(from: src.bindMemory(to: UInt8.self).baseAddress!, count: bytes.count)
+            if let baseAddress = src.bindMemory(to: UInt8.self).baseAddress {
+                buffer.advanced(by: position).initialize(from: baseAddress, count: bytes.count)
+            }
         }
         position += bytes.count
     }

@@ -96,10 +96,10 @@ public class Account {
     ///   - scryptParams: The Scrypt parameters used for decryption
     public func decryptPrivateKey(_ password: String, _ scryptParams: ScryptParams = .DEFAULT) throws {
         if keyPair != nil { return }
-        if encryptedPrivateKey == nil {
+        guard let encryptedKey = encryptedPrivateKey else {
             throw WalletError.accountState("The account does not hold an encrypted private key.")
         }
-        keyPair = try NEP2.decrypt(password, encryptedPrivateKey!, scryptParams)
+        keyPair = try NEP2.decrypt(password, encryptedKey, scryptParams)
     }
     
     /// Encrypts this account's private key according to the NEP-2 standard using the default Scrypt parameters.
@@ -107,10 +107,10 @@ public class Account {
     ///   - password: The passphrase used to encrypt this account's private key
     ///   - scryptParams: The Scrypt parameters used for encryption
     public func encryptPrivateKey(_ password: String, _ scryptParams: ScryptParams = .DEFAULT) throws {
-        if keyPair == nil {
+        guard let key = keyPair else {
             throw WalletError.accountState("The account does not hold a decrypted private key.")
         }
-        encryptedPrivateKey = try NEP2.encrypt(password, keyPair!, scryptParams)
+        encryptedPrivateKey = try NEP2.encrypt(password, key, scryptParams)
         keyPair = nil
     }
     
@@ -227,9 +227,9 @@ public class Account {
         var signingThreshold: Int? = nil, nrOfParticipants: Int? = nil
         if let contract = nep6Acct.contract, let script = contract.script, !script.isEmpty {
             verificationScript = VerificationScript(script.base64Decoded)
-            if verificationScript!.isMultiSigScript() {
-                signingThreshold = try verificationScript!.getSigningThreshold()
-                nrOfParticipants = try verificationScript!.getNrOfAccounts()
+            if let vs = verificationScript, vs.isMultiSigScript() {
+                signingThreshold = try vs.getSigningThreshold()
+                nrOfParticipants = try vs.getNrOfAccounts()
             }
         }
         return Account(address: nep6Acct.address, label: nep6Acct.label, verificationScript: verificationScript, isLocked: nep6Acct.lock,

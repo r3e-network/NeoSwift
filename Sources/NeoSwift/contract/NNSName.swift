@@ -36,12 +36,13 @@ public struct NNSName {
     private static func checkFragment(_ fragment: String, _ isRoot: Bool) -> Bool {
         let maxLength = isRoot ? 16 : 63
         guard !fragment.isEmpty && fragment.count <= maxLength else { return false }
-        let c = fragment.first!
-        if isRoot && !c.isLetter { return false }
-        else if !isRoot && !(c.isLetter || c.isNumber) { return false }
+        guard let firstChar = fragment.first else { return false }
+        if isRoot && !firstChar.isLetter { return false }
+        else if !isRoot && !(firstChar.isLetter || firstChar.isNumber) { return false }
         if fragment.count == 1 { return true }
         if fragment.dropLast(1).contains(where: { !($0.isLetter || $0.isNumber || $0 == "-") }) { return false }
-        return fragment.last!.isLetter || fragment.last!.isNumber
+        guard let lastChar = fragment.last else { return false }
+        return lastChar.isLetter || lastChar.isNumber
     }
     
     /// Represents a NeoNameService root

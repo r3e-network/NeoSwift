@@ -51,7 +51,7 @@ public class SmartContract {
         guard case .byteString = stackItem else {
             throw ContractError.unexpectedReturnType(stackItem.jsonValue, [StackItem.BYTE_STRING_VALUE])
         }
-        return stackItem.string!
+        return try stackItem.getString()
     }
     
     /// Sends an `invokefunction` RPC call to the given contract function expecting an Integer as return type.
@@ -66,7 +66,7 @@ public class SmartContract {
         guard case .integer = stackItem else {
             throw ContractError.unexpectedReturnType(stackItem.jsonValue, [StackItem.INTEGER_VALUE])
         }
-        return stackItem.integer!
+        return try stackItem.getInt()
     }
     
     /// Sends an `invokefunction` RPC call to the given contract function expecting an Integer as return type.
@@ -79,7 +79,11 @@ public class SmartContract {
         try throwIfFaultState(invocationResult)
         let stackItem = try invocationResult.getFirstStackItem()
         switch stackItem {
-        case .boolean, .integer, .byteString, .buffer: return stackItem.boolean!
+        case .boolean, .integer, .byteString, .buffer:
+            guard let boolean = stackItem.boolean else {
+                throw ContractError.unexpectedReturnType(stackItem.jsonValue, [StackItem.BOOLEAN_VALUE])
+            }
+            return boolean
         default: throw ContractError.unexpectedReturnType(stackItem.jsonValue, [StackItem.BYTE_STRING_VALUE])
         }
     }
@@ -92,7 +96,10 @@ public class SmartContract {
     public func callFunctionReturningScriptHash(_ function: String, _ params: [ContractParameter] = []) async throws -> Hash160 {
         let invocationResult = try await callInvokeFunction(function, params).getResult()
         try throwIfFaultState(invocationResult)
-        return try extractScriptHash(invocationResult.stack.first!)
+        guard let firstItem = invocationResult.stack.first else {
+            throw ContractError.unexpectedReturnType("No stack items returned", [StackItem.BYTE_STRING_VALUE])
+        }
+        return try extractScriptHash(firstItem)
     }
     
     private func extractScriptHash(_ item: StackItem) throws -> Hash160 {
@@ -100,7 +107,8 @@ public class SmartContract {
             throw ContractError.unexpectedReturnType(item.jsonValue, [StackItem.BYTE_STRING_VALUE])
         }
         do {
-            return try Hash160(item.hexString!.reversedHex)
+            let hexString = try item.getHexString()
+            return try Hash160(hexString.reversedHex)
         } catch {
             throw ContractError.unexpectedReturnType("Return type did not contain script hash in expected format. \(error.localizedDescription)")
         }
@@ -127,7 +135,10 @@ public class SmartContract {
         guard let sessionId = invocationResult.sessionId else {
             throw NeoSwiftError.illegalState("No session id was found. The connected Neo node might not support sessions.")
         }
-        return .init(neoSwift: neoSwift, sessionId: sessionId, iteratorId: stackItem.iteratorId!, mapper: mapper)
+        guard let iteratorId = stackItem.iteratorId else {
+            throw ContractError.unexpectedReturnType("No iterator ID found in interop interface", [StackItem.INTEROP_INTERFACE_VALUE])
+        }
+        return .init(neoSwift: neoSwift, sessionId: sessionId, iteratorId: iteratorId, mapper: mapper)
     }
     
     /// Sends an `invokefunction` RPC call to the given contract function expecting an ``StackItem/interopInterface(_:_:)``  as a return type.

@@ -1,7 +1,7 @@
 
 import Combine
 
-public class NeoTransaction {
+public final class NeoTransaction {
     
     public static let HEADER_SIZE: Int = 25
     
@@ -20,7 +20,7 @@ public class NeoTransaction {
     /// The signers of this transaction.
     public let signers: [Signer]
     
-    /// TThe sender is the account that pays for the transaction's fees.
+    /// The sender is the account that pays for the transaction's fees.
     public let systemFee: Int
     
     /// The network fee of this transaction in GAS fractions.
@@ -55,7 +55,10 @@ public class NeoTransaction {
     ///
     /// The sender is the account that pays for the transaction's fees.
     public var sender: Hash160 {
-        return (signers.first { $0.scopes.contains(.none) } ?? signers.first!).signerHash
+        guard let signer = signers.first(where: { $0.scopes.contains(.none) }) ?? signers.first else {
+            preconditionFailure("Transaction must have at least one signer to determine sender")
+        }
+        return signer.signerHash
     }
     
     public var txId: Hash256? {
@@ -156,7 +159,7 @@ public class NeoTransaction {
         }
         return neoSwift!.catchUpToLatestAndSubscribeToNewBlocksPublisher(blockCountWhenSent, true)
             .prefix(while: predicate)
-            .tryMap { try! $0.getResult().index }
+            .tryMap { try $0.getResult().index }
             .eraseToAnyPublisher()
     }
     

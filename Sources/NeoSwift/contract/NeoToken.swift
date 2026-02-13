@@ -116,7 +116,10 @@ public class NeoToken: FungibleToken {
         guard case .array = arrayItem else {
             throw ContractError.unexpectedReturnType(arrayItem.jsonValue, [StackItem.ARRAY_VALUE])
         }
-        return try arrayItem.list!.map(candidateMapper)
+        guard let list = arrayItem.list else {
+            throw ContractError.unexpectedReturnType("No list found in array", [StackItem.ARRAY_VALUE])
+        }
+        return try list.map(candidateMapper)
     }
     
     /// Checks if there is a candidate with the provided public key.

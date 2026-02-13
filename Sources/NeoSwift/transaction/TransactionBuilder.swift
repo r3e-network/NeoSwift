@@ -1,6 +1,6 @@
 
 /// Used to build a ``NeoTransaction``. When signing the `TransactionBuilder`, a transaction is created that can be sent to the Neo node.
-public class TransactionBuilder {
+public final class TransactionBuilder {
     
     public static let GAS_TOKEN_HASH = try! Hash160("d2a4cff31913016155e38e474a2c06d08be276cf")
     public static let BALANCE_OF_FUNCTION = "balanceOf"
@@ -267,10 +267,13 @@ public class TransactionBuilder {
     }
     
     private func calcNetworkFee() async throws -> Int {
+        guard let validUntilBlock = validUntilBlock, let script = script else {
+            throw TransactionError.transactionConfiguration("Cannot calculate network fee without validUntilBlock and script")
+        }
         let tx = NeoTransaction(neoSwift: neoSwift, version: version, nonce: nonce,
-                                         validUntilBlock: validUntilBlock!, signers: signers,
+                                         validUntilBlock: validUntilBlock, signers: signers,
                                          systemFee: 0, networkFee: 0, attributes: attributes,
-                                         script: script!, witnesses: [])
+                                         script: script, witnesses: [])
         var hasAtLeastOneSigningAccount = false
         for signer in signers {
             if let contractSigner = signer as? ContractSigner {
@@ -288,7 +291,14 @@ public class TransactionBuilder {
     }
     
     private func getSenderGasBalance() async throws -> Int {
-        return try await neoSwift.invokeFunction(Self.GAS_TOKEN_HASH, Self.BALANCE_OF_FUNCTION, [.hash160(signers[0].signerHash)], []).send().getResult().stack[0].integer!
+        guard let firstSigner = signers.first else {
+            throw TransactionError.transactionConfiguration("Cannot get sender GAS balance without signers")
+        }
+        let result = try await neoSwift.invokeFunction(Self.GAS_TOKEN_HASH, Self.BALANCE_OF_FUNCTION, [.hash160(firstSigner.signerHash)], []).send().getResult()
+        guard let stackItem = result.stack.first, let integer = stackItem.integer else {
+            throw TransactionError.transactionConfiguration("Invalid GAS balance response from node")
+        }
+        return integer
     }
     
     private func canSendCoverFees(_ fees: Int) async throws -> Bool {
