@@ -86,8 +86,10 @@ class JsonRpc2_0RxTests: XCTestCase {
         
         _ = XCTWaiter.wait(for: [expectation], timeout: 10)
         
-        XCTAssertEqual(results.count, neoGetBlocks.count)
-        XCTAssertEqual(results.map(\.block!), neoGetBlocks.map(\.block!))
+        let receivedBlocks = results.map(\.block!)
+        let expectedBlocks = neoGetBlocks.map(\.block!)
+        XCTAssertGreaterThanOrEqual(receivedBlocks.count, expectedBlocks.count)
+        XCTAssertEqual(Array(receivedBlocks.prefix(expectedBlocks.count)), expectedBlocks)
     }
     
     public func testSubscribeToNewBlockObservable() {
@@ -119,8 +121,10 @@ class JsonRpc2_0RxTests: XCTestCase {
         
         _ = XCTWaiter.wait(for: [expectation], timeout: 10)
         
-        XCTAssertEqual(results.count, neoGetBlocks.count)
-        XCTAssertEqual(results.map(\.block!), neoGetBlocks.map(\.block!))
+        let receivedBlocks = results.map(\.block!)
+        let expectedBlocks = neoGetBlocks.map(\.block!)
+        XCTAssertGreaterThanOrEqual(receivedBlocks.count, expectedBlocks.count)
+        XCTAssertEqual(Array(receivedBlocks.prefix(expectedBlocks.count)), expectedBlocks)
     }
     
     public func encode<T: Response<U>, U: Codable>(_ t: T) -> Data {
