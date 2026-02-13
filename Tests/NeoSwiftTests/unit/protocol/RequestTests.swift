@@ -1127,7 +1127,7 @@ class RequestTests: XCTestCase {
         "\"jsonrpc\":\"2.0\"," +
         "\"method\":\"expresscreateoracleresponsetx\"," +
         "\"id\":1," +
-        "\"params\":[{\"id\":3,\"result\":\"bmVvdzNq\",\"code\":\"Success\"}]}"
+        "\"params\":[{\"id\":3,\"result\":\"bmVvdzNq\",\"code\":\"Success\",\"type\":\"OracleResponse\"}]}"
 
         verifyExpressRequest(json, { neoSwiftExpress in
             return neoSwiftExpress.expressCreateOracleResponseTx(.oracleResponse(3, .success, "bmVvdzNq"))

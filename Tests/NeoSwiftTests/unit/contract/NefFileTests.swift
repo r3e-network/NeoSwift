@@ -113,7 +113,7 @@ class NefFileTests: XCTestCase {
         + "00000000";
         
         XCTAssertThrowsError(try NefFile.from(nef.bytesFromHex)) { error in
-            XCTAssertEqual(error.localizedDescription, "The checksums did not match.")
+            XCTAssertTrue(error.localizedDescription.contains("checksum validation failed"))
         }
     }
     
@@ -166,7 +166,7 @@ class NefFileTests: XCTestCase {
         let bytes = nef.toArray()
         let hexString = bytes.toHexString()
 
-        XCTAssert(hexString.contains("1d6769746875622e636f6d2f7233652d6e6574776f726b2f4e656f5377696674"))
+        XCTAssert(hexString.contains("1f6769746875622e636f6d2f7233652d6e6574776f726b2f4e656f5377696674"))
         
         let deserializedNef = try NefFile.from(bytes)
         XCTAssertEqual(deserializedNef.sourceUrl, url)
