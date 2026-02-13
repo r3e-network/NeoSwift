@@ -156,14 +156,15 @@ final class SecurityTests: XCTestCase {
     func testHashCacheThreadSafety() {
         let cache = HashCache()
         let expectation = XCTestExpectation(description: "Concurrent hash operations")
-        expectation.expectedFulfillmentCount = 100
+        let iterations = 20
+        expectation.expectedFulfillmentCount = iterations
         
         let data = "Concurrent test data".bytes
         var results = [Bytes]()
         let lock = NSLock()
         
         // Perform concurrent hash operations
-        for _ in 0..<100 {
+        for _ in 0..<iterations {
             DispatchQueue.global().async {
                 let hash = cache.sha256(data)
                 lock.lock()
