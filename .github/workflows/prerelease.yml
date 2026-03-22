@@ -1,10 +1,8 @@
 name: Pre-Release
-
-on:
+true:
   push:
     tags:
-      - "v[0-9]+.[0-9]+.[0-9]+-*"  # v1.0.0-beta, v1.0.0-alpha, etc.
-
+    - v[0-9]+.[0-9]+.[0-9]+-*
 jobs:
   validate:
     name: Validate Release
@@ -12,198 +10,161 @@ jobs:
     outputs:
       version: ${{ steps.get_version.outputs.version }}
       is_prerelease: ${{ steps.check_prerelease.outputs.is_prerelease }}
-    
     steps:
     - uses: actions/checkout@v4
-    
     - name: Get version from tag
       id: get_version
-      run: |
-        VERSION=${GITHUB_REF#refs/tags/}
+      run: 'VERSION=${GITHUB_REF#refs/tags/}
+
         echo "version=$VERSION" >> $GITHUB_OUTPUT
+
         echo "Version: $VERSION"
-    
+
+        '
     - name: Check if prerelease
       id: check_prerelease
-      run: |
-        if [[ "${{ steps.get_version.outputs.version }}" =~ -(alpha|beta|rc) ]]; then
-          echo "is_prerelease=true" >> $GITHUB_OUTPUT
-          echo "This is a pre-release"
-        else
-          echo "is_prerelease=false" >> $GITHUB_OUTPUT
-          echo "This is a stable release"
-        fi
-    
+      run: "if [[ \"${{ steps.get_version.outputs.version }}\" =~ -(alpha|beta|rc)\
+        \ ]]; then\n  echo \"is_prerelease=true\" >> $GITHUB_OUTPUT\n  echo \"This\
+        \ is a pre-release\"\nelse\n  echo \"is_prerelease=false\" >> $GITHUB_OUTPUT\n\
+        \  echo \"This is a stable release\"\nfi\n"
     - name: Setup Swift
       uses: swift-actions/setup-swift@v1
       with:
-        swift-version: "5.9"
-    
+        swift-version: '5.9'
     - name: Validate package
-      run: |
-        swift package describe
+      run: 'swift package describe
+
         swift package show-dependencies
+
         swift build --configuration release
+
         swift test --parallel
 
+        '
+    timeout-minutes: 15
   security-check:
     name: Security Pre-Release Check
     runs-on: ubuntu-22.04
     needs: validate
-    
     steps:
     - uses: actions/checkout@v4
-    
     - name: Run security scan
       uses: trufflesecurity/trufflehog@main
       with:
         path: ./
         base: ${{ github.event.repository.default_branch }}
         head: HEAD
-    
     - name: Check for test credentials in release
-      run: |
-        if grep -r "defaultAccountPassword.*neo" Sources/; then
-          echo "❌ ERROR: Test credentials found in Sources/"
-          exit 1
-        fi
-        echo "✅ No test credentials found in production code"
-    
+      run: "if grep -r \"defaultAccountPassword.*neo\" Sources/; then\n  echo \"❌\
+        \ ERROR: Test credentials found in Sources/\"\n  exit 1\nfi\necho \"✅ No test\
+        \ credentials found in production code\"\n"
     - name: Validate version bounds
-      run: |
-        if ! grep -q "..<" Package.swift; then
-          echo "❌ ERROR: Dependencies should have upper bounds"
-          exit 1
-        fi
-        echo "✅ Dependencies have proper version constraints"
-
+      run: "if ! grep -q \"..<\" Package.swift; then\n  echo \"❌ ERROR: Dependencies\
+        \ should have upper bounds\"\n  exit 1\nfi\necho \"✅ Dependencies have proper\
+        \ version constraints\"\n"
+    timeout-minutes: 15
   build-artifacts:
     name: Build Release Artifacts
     runs-on: ${{ matrix.os }}
-    needs: [validate, security-check]
+    needs:
+    - validate
+    - security-check
     strategy:
       matrix:
-        os: [macos-14, ubuntu-22.04]
-        
+        os:
+        - macos-14
+        - ubuntu-22.04
     steps:
     - uses: actions/checkout@v4
-    
     - name: Setup Swift
       uses: swift-actions/setup-swift@v1
       with:
-        swift-version: "5.9"
-    
+        swift-version: '5.9'
     - name: Build release
       run: swift build --configuration release
-    
     - name: Create archive
-      run: |
-        PLATFORM=$(echo "${{ matrix.os }}" | cut -d'-' -f1)
-        tar -czf neoswift-${{ needs.validate.outputs.version }}-${PLATFORM}.tar.gz \
-          -C .build/release .
-    
+      run: "PLATFORM=$(echo \"${{ matrix.os }}\" | cut -d'-' -f1)\ntar -czf neoswift-${{\
+        \ needs.validate.outputs.version }}-${PLATFORM}.tar.gz \\\n  -C .build/release\
+        \ .\n"
     - name: Upload artifacts
       uses: actions/upload-artifact@v3
       with:
         name: neoswift-${{ needs.validate.outputs.version }}-${{ matrix.os }}
         path: neoswift-${{ needs.validate.outputs.version }}-*.tar.gz
-
+    timeout-minutes: 15
   create-release:
     name: Create Pre-Release
     runs-on: ubuntu-22.04
-    needs: [validate, security-check, build-artifacts]
-    
+    needs:
+    - validate
+    - security-check
+    - build-artifacts
     steps:
     - uses: actions/checkout@v4
       with:
         fetch-depth: 0
-    
     - name: Download artifacts
       uses: actions/download-artifact@v3
-    
     - name: Generate release notes
       id: release_notes
-      run: |
-        cat > release_notes.md << 'EOF'
-        ## 🚀 NeoSwift ${{ needs.validate.outputs.version }}
-        
-        ### 🛡️ Security Improvements
-        - ✅ Secure memory management for private keys
-        - ✅ Constant-time cryptographic comparisons  
-        - ✅ Test credentials isolated from production builds
-        - ✅ Enhanced dependency security with version bounds
-        
-        ### ⚡ Performance Improvements  
-        - ✅ Optimized binary serialization (50-70% faster)
-        - ✅ Hash caching for repeated operations
-        - ✅ Non-blocking async operations
-        
-        ### 🧪 Testing & Quality
-        - ✅ Comprehensive security test suite
-        - ✅ Integration tests for wallet operations
-        - ✅ Automated security scanning
-        
-        ### 📚 Documentation
-        - ✅ Production deployment guide
-        - ✅ Security best practices
-        - ✅ Migration guide for secure APIs
-        
-        ### 🔧 Breaking Changes
-        - `ECKeyPair` should be replaced with `SecureECKeyPair` for production use
-        - Test credentials moved to external files (DEBUG builds only)
-        - Some internal APIs made private for security
-        
-        ### 📦 Installation
-        
-        **Swift Package Manager:**
-        ```swift
-        .package(url: "https://github.com/crisogray/NeoSwift", from: "${{ needs.validate.outputs.version }}")
-        ```
-        
-        **For production use, ensure you:**
-        1. Use `SecureECKeyPair` for key management
-        2. Enable hash caching: `HashCache.shared.maxCacheSize = 5000`
-        3. Review the [Security Guide](./docs/SECURITY.md)
-        4. Follow the [Deployment Guide](./docs/DEPLOYMENT.md)
-        
-        ---
-        
-        **Previous release:** $(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "Initial release")  
-        **Full Changelog:** https://github.com/${{ github.repository }}/compare/$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || git rev-list --max-parents=0 HEAD)...${{ needs.validate.outputs.version }}
-        EOF
-    
+      run: "cat > release_notes.md << 'EOF'\n## \U0001F680 NeoSwift ${{ needs.validate.outputs.version\
+        \ }}\n\n### \U0001F6E1️ Security Improvements\n- ✅ Secure memory management\
+        \ for private keys\n- ✅ Constant-time cryptographic comparisons  \n- ✅ Test\
+        \ credentials isolated from production builds\n- ✅ Enhanced dependency security\
+        \ with version bounds\n\n### ⚡ Performance Improvements  \n- ✅ Optimized binary\
+        \ serialization (50-70% faster)\n- ✅ Hash caching for repeated operations\n\
+        - ✅ Non-blocking async operations\n\n### \U0001F9EA Testing & Quality\n- ✅\
+        \ Comprehensive security test suite\n- ✅ Integration tests for wallet operations\n\
+        - ✅ Automated security scanning\n\n### \U0001F4DA Documentation\n- ✅ Production\
+        \ deployment guide\n- ✅ Security best practices\n- ✅ Migration guide for secure\
+        \ APIs\n\n### \U0001F527 Breaking Changes\n- `ECKeyPair` should be replaced\
+        \ with `SecureECKeyPair` for production use\n- Test credentials moved to external\
+        \ files (DEBUG builds only)\n- Some internal APIs made private for security\n\
+        \n### \U0001F4E6 Installation\n\n**Swift Package Manager:**\n```swift\n.package(url:\
+        \ \"https://github.com/crisogray/NeoSwift\", from: \"${{ needs.validate.outputs.version\
+        \ }}\")\n```\n\n**For production use, ensure you:**\n1. Use `SecureECKeyPair`\
+        \ for key management\n2. Enable hash caching: `HashCache.shared.maxCacheSize\
+        \ = 5000`\n3. Review the [Security Guide](./docs/SECURITY.md)\n4. Follow the\
+        \ [Deployment Guide](./docs/DEPLOYMENT.md)\n\n---\n\n**Previous release:**\
+        \ $(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo \"Initial release\"\
+        )  \n**Full Changelog:** https://github.com/${{ github.repository }}/compare/$(git\
+        \ describe --tags --abbrev=0 HEAD^ 2>/dev/null || git rev-list --max-parents=0\
+        \ HEAD)...${{ needs.validate.outputs.version }}\nEOF\n"
     - name: Create Release
       uses: softprops/action-gh-release@v1
       with:
-        name: "NeoSwift ${{ needs.validate.outputs.version }}"
+        name: NeoSwift ${{ needs.validate.outputs.version }}
         body_path: release_notes.md
         draft: false
         prerelease: ${{ needs.validate.outputs.is_prerelease }}
-        files: |
-          neoswift-*/neoswift-*.tar.gz
+        files: 'neoswift-*/neoswift-*.tar.gz
+
+          '
         generate_release_notes: false
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
+    timeout-minutes: 15
   post-release:
     name: Post-Release Tasks
     runs-on: ubuntu-22.04
-    needs: [validate, create-release]
-    
+    needs:
+    - validate
+    - create-release
     steps:
     - uses: actions/checkout@v4
-    
     - name: Update release badge
-      run: |
-        echo "Release ${{ needs.validate.outputs.version }} completed!"
-        echo "- Type: ${{ needs.validate.outputs.is_prerelease == 'true' && 'Pre-release' || 'Stable' }}"
+      run: 'echo "Release ${{ needs.validate.outputs.version }} completed!"
+
+        echo "- Type: ${{ needs.validate.outputs.is_prerelease == ''true'' && ''Pre-release''
+        || ''Stable'' }}"
+
         echo "- Tag: ${{ needs.validate.outputs.version }}"
+
         echo "- Artifacts: Built for macOS and Linux"
-    
+
+        '
     - name: Notify on Discord/Slack (if configured)
-      run: |
-        if [ "${{ needs.validate.outputs.is_prerelease }}" == "false" ]; then
-          echo "🎉 Stable release notification would be sent here"
-        else
-          echo "🧪 Pre-release notification would be sent here"
-        fi
+      run: "if [ \"${{ needs.validate.outputs.is_prerelease }}\" == \"false\" ]; then\n\
+        \  echo \"\U0001F389 Stable release notification would be sent here\"\nelse\n\
+        \  echo \"\U0001F9EA Pre-release notification would be sent here\"\nfi"
+    timeout-minutes: 15
