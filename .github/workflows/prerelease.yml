@@ -1,5 +1,5 @@
 name: Pre-Release
-true:
+on:
   push:
     tags:
     - v[0-9]+.[0-9]+.[0-9]+-*
