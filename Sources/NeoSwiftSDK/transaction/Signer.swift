@@ -159,7 +159,11 @@ extension Signer: NeoSerializable {
                 throw NeoError.deserialization("A signer's scope can only contain \(NeoConstants.MAX_SIGNER_SUBITEMS) \(errorLabel). The input data contained \(count).")
             }
         }
-        return Signer(signerHash, scopes, allowedContracts, allowedGroups, rules) as! Self
+        let signer = Signer(signerHash, scopes, allowedContracts, allowedGroups, rules)
+        guard let typed = signer as? Self else {
+            throw NeoError.deserialization("Cannot deserialize \(String(describing: Self.self)) from signer data.")
+        }
+        return typed
     }
     
 }

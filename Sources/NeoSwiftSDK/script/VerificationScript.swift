@@ -146,7 +146,11 @@ public final class VerificationScript: NeoSerializable, Hashable {
     }
     
     public static func deserialize(_ reader: BinaryReader) throws -> Self {
-        return try VerificationScript(reader.readVarBytes()) as! Self
+        let script = try VerificationScript(reader.readVarBytes())
+        guard let typed = script as? Self else {
+            throw NeoError.deserialization("Cannot deserialize \(String(describing: Self.self)) from verification script data.")
+        }
+        return typed
     }
     
     public static func == (lhs: VerificationScript, rhs: VerificationScript) -> Bool {

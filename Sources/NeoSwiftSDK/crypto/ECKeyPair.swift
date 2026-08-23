@@ -208,7 +208,11 @@ extension ECPublicKey: NeoSerializable {
     /// - Returns: The deserialized public key
     public static func deserialize(_ reader: BinaryReader) throws -> Self {
         let bytes = try reader.readBytes(NeoConstants.PUBLIC_KEY_SIZE_COMPRESSED)
-        return try ECPublicKey(NeoConstants.SECP256R1_DOMAIN.decodePoint(bytes)) as! Self
+        let key = try ECPublicKey(NeoConstants.SECP256R1_DOMAIN.decodePoint(bytes))
+        guard let typed = key as? Self else {
+            throw NeoError.deserialization("Cannot deserialize \(String(describing: Self.self)) from public key data.")
+        }
+        return typed
     }
     
 }

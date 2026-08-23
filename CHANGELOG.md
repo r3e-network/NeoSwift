@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Replaced unsafe force-casts (`as!`) in `NeoTransaction`, `Signer`, `VerificationScript`, `InvocationScript`, and `ECPublicKey` deserialization with safe conditional casts that throw typed `NeoError.deserialization` errors instead of crashing on malformed input.
+- `NeoTransaction/toContractParametersContext()` now conditionally casts signature parameter values to `Bytes` instead of force-casting.
+
 ## [4.0.1] - 2026-06-28
 
 ### Fixed

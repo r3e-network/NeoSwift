@@ -65,7 +65,11 @@ public final class InvocationScript: NeoSerializable, Hashable {
     }
     
     public static func deserialize(_ reader: BinaryReader) throws -> Self {
-        return try InvocationScript(reader.readVarBytes()) as! Self
+        let script = try InvocationScript(reader.readVarBytes())
+        guard let typed = script as? Self else {
+            throw NeoError.deserialization("Cannot deserialize \(String(describing: Self.self)) from invocation script data.")
+        }
+        return typed
     }
     
     public static func == (lhs: InvocationScript, rhs: InvocationScript) -> Bool {

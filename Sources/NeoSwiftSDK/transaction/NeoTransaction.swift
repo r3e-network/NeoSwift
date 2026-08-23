@@ -253,11 +253,28 @@ extension NeoTransaction: NeoSerializable {
         let script = try reader.readVarBytes()
         var witnesses: [Witness] = []
         if reader.available > 0 { witnesses = try reader.readSerializableList() }
-        return NeoTransaction(version: version, nonce: nonce,
+        return try Self.fromBaseTransaction(
+            version: version, nonce: nonce, validUntilBlock: validUntilBlock,
+            signers: signers, systemFee: systemFee, networkFee: networkFee,
+            attributes: attributes, script: script, witnesses: witnesses)
+    }
+
+    /// Shared construction path for `deserialize` so subclasses can control how a
+    /// base transaction is converted into the concrete `Self` type without
+    /// unsafe force-casts.
+    private static func fromBaseTransaction(version: Byte, nonce: Int, validUntilBlock: Int,
+                                            signers: [Signer], systemFee: Int, networkFee: Int,
+                                            attributes: [TransactionAttribute], script: Bytes,
+                                            witnesses: [Witness]) throws -> Self {
+        let base = NeoTransaction(version: version, nonce: nonce,
                      validUntilBlock: validUntilBlock,
                      signers: signers, systemFee: systemFee,
                      networkFee: networkFee, attributes: attributes,
-                     script: script, witnesses: witnesses) as! Self
+                     script: script, witnesses: witnesses)
+        guard let typed = base as? Self else {
+            throw NeoError.deserialization("Cannot deserialize \(String(describing: Self.self)) from transaction data.")
+        }
+        return typed
     }
     
     private static func readTransactionAttributes(_ reader: BinaryReader, _ signerSize: Int) throws -> [TransactionAttribute] {
@@ -291,9 +308,9 @@ extension NeoTransaction: NeoSerializable {
                 params = try (1...verificationScript.getSigningThreshold()).map { _ in ContractParameter(type: .signature) }
             }
             var pubKeyToSignature: [String: String] = [:]
-            if verificationScript.isSingleSigScript(), let value = params.first?.value {
+            if verificationScript.isSingleSigScript(), let value = params.first?.value as? Bytes {
                 let pubKey = try verificationScript.getPublicKeys()[0].getEncodedCompressedHex()
-                pubKeyToSignature[pubKey] = (value as! Bytes).base64Encoded
+                pubKeyToSignature[pubKey] = value.base64Encoded
             }
             let script = verificationScript.script.base64Encoded
             return ContractParametersContext.ContextItem(script: script, parameters: params, signatures: pubKeyToSignature)
